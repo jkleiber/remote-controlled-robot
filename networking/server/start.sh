@@ -10,8 +10,9 @@ docker rm ${CONTAINER_NAME}
 
 # Run the image inside the specified container
 docker run \
-    -v /dev:/dev \
     -v $(pwd):/server \
+    -p 5001:5001 \
     --privileged \
+    --net=host \
     --name ${CONTAINER_NAME} \
     ${DOCKER_IMG}
