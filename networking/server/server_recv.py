@@ -1,7 +1,7 @@
 import socket
 
 # Server info
-host = 'kleiber.xyz'
+host = '0.0.0.0'
 port = 5001
 
 # UDP socket
