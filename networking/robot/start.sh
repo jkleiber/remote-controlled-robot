@@ -12,6 +12,7 @@ docker rm ${CONTAINER_NAME}
 docker run \
     -v /dev:/dev \
     -v $(pwd):/app \
+    -p 5001:5001 \
     --privileged \
     --name ${CONTAINER_NAME} \
     ${DOCKER_IMG}
