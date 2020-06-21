@@ -69,9 +69,10 @@ def robot_heartbeat():
             # TODO: add more advanced password via data.
             data, addr = heart_sock.recvfrom(64)
 
-            # Set robot IP
+            # Set robot IP.
             if data.decode() == 'heartbeat':
-                robot_ip = addr
+                # Extract IP address from (IP, port).
+                robot_ip = addr[0]
                 robot_conn = (robot_ip, robot_send_port)
                 print("Received Heartbeat from " + str(addr))
         except Exception as e:
