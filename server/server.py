@@ -45,7 +45,7 @@ def control_passthrough():
         # Process data in non-blocking fashion.
         try:
             data, addr = ctrl_recv_sock.recvfrom(256)
-            print(str(data.decode()) + ' from ' + str(addr))
+            # print(str(data.decode()) + ' from ' + str(addr))
         except socket.error as e:
             if e.errno != errno.EAGAIN:
                 print("Control Receive Error: " + str(e))
@@ -73,6 +73,7 @@ def robot_heartbeat():
             if data.decode() == 'heartbeat':
                 robot_ip = addr
                 robot_conn = (robot_ip, robot_send_port)
+                print("Received Heartbeat from " + str(addr))
         except Exception as e:
             print("Heartbeat Error: " + str(e))
 
