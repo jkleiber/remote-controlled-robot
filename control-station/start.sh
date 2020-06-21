@@ -7,7 +7,7 @@ docker rm ${DOCKER_CONTAINER}
 
 # Run the container
 docker run \
-    -d \
+    --name ${DOCKER_CONTAINER} \
     -v $(pwd):/teleop \
     -v /dev:/dev \
     --privileged \

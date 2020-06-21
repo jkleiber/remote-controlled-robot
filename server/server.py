@@ -12,7 +12,7 @@ if __name__=="__main__":
     while True:
         try:
             print("waiting for data")
-            data, addr = udp_sock.recvfrom(1024) # 1024 buffer size
+            data, addr = udp_sock.recvfrom(256) # 1024 buffer size
             print(str(data.decode()) + ' from ' + str(addr))
         except Exception as e:
             print(str(e))

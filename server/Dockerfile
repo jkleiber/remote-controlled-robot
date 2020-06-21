@@ -4,4 +4,4 @@ WORKDIR /server
 
 EXPOSE 5001/udp
 
-CMD ["python","-u", "server_recv.py"]
+CMD ["python","-u", "server.py"]
