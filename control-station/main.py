@@ -6,7 +6,7 @@ import time
 
 from inputs import get_gamepad
 
-from gamepad import LogitechF310Mapper
+from common.gamepad import LogitechF310Mapper
 
 # Server info
 server_addr = "kleiber.xyz"
@@ -36,7 +36,7 @@ def udp_loop():
     while True:
         # Get gamepad state and add timestamp
         gamepad_dict = gamepad.get_state()
-        gamepad_dict['timestamp'] =
+        # TODO: add timestamp for packet watchdog
 
         # Send the gamepad state as a JSON string.
         control_pkt = json.dumps(gamepad_dict).encode()
