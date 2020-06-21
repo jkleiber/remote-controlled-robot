@@ -57,6 +57,7 @@ def control_passthrough():
         ctrl_str = json.dumps(ctrl_pkt).encode()
 
         # Send data to the robot if we know the robot's IP address.
+        # print(robot_ip)
         if robot_ip is not None:
             try:
                 robot_send_sock.sendto(ctrl_str, robot_conn)
@@ -64,6 +65,7 @@ def control_passthrough():
                 print("Control Send Error: " + str(e))
 
 def robot_heartbeat():
+    global robot_conn, robot_ip
     while True:
         try:
             # TODO: add more advanced password via data.
@@ -74,7 +76,7 @@ def robot_heartbeat():
                 # Extract IP address from (IP, port).
                 robot_ip = addr[0]
                 robot_conn = (robot_ip, robot_send_port)
-                print("Received Heartbeat from " + str(addr))
+                # print("Received Heartbeat from " + str(addr))
         except Exception as e:
             print("Heartbeat Error: " + str(e))
 
