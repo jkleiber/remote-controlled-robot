@@ -48,7 +48,7 @@ def control_passthrough():
         except socket.timeout as e:
             pass
         except Exception as e:
-            print(str(e))
+            print("Control Receive Error: " + str(e))
         # If everything went well, establish the control data as the packet.
         else:
             ctrl_pkt = data
@@ -61,7 +61,7 @@ def control_passthrough():
             try:
                 robot_send_sock.sendto(ctrl_str, robot_conn)
             except Exception as e:
-                print(str(e))
+                print("Control Send Error: " + str(e))
 
 def robot_heartbeat():
     while True:
@@ -73,6 +73,8 @@ def robot_heartbeat():
             if data.decode() == 'heartbeat':
                 robot_ip = addr
                 robot_conn = (robot_ip, robot_send_port)
+        except Exception as e:
+            print("Heartbeat Error: " + str(e))
 
 if __name__=="__main__":
     # Set up threads.
