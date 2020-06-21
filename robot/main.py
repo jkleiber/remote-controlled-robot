@@ -41,7 +41,7 @@ def video_process():
         # Only use valid frames.
         if ret:
             data = frame.flatten()
-            data = data.tostring().encode()
+            data = data.tostring() #.encode()
         else:
             print('Invalid video frame')
 
@@ -53,22 +53,23 @@ def recv_control():
         except socket.error as e:
             if e.errno != errno.EAGAIN:
                 print("Receiver Error: " + str(e))
+        else:
+            # Make controls into meaningful robot messages.
+            recv_dict = json.loads(data)
+            turn = recv_dict['ABS_RX'] / 32768
+            power = recv_dict['ABS_Y']
 
-        # Make controls into meaningful robot messages.
-        recv_dict = json.loads(data)
-        turn = recv_dict['ABS_RX'] / 32768
-        power = recv_dict['ABS_Y']
+            # Form the robot input dictionary.
+            ctrl_dict = {}
+            ctrl_dict['power'] = power
+            ctrl_dict['turn'] = turn
 
-        # Form the robot input dictionary.
-        ctrl_dict = {}
-        ctrl_dict['power'] = power
-        ctrl_dict['turn'] = turn
+            # Convert to string
+            ctrl_string = json.dumps(ctrl_dict)
+            print(ctrl_string)
 
-        # Convert to string
-        ctrl_string = json.dumps(ctrl_dict)
-
-        # Publish to the robot.
-        robot_usb.write(ctrl_string)
+            # Publish to the robot.
+            robot_usb.write(ctrl_string)
 
 def heartbeat():
     while True:
@@ -84,9 +85,6 @@ def heartbeat():
 
 
 if __name__=="__main__":
-    # Open the serial channel
-    robot_usb.open()
-
     # Initialize threads for the remote control receiver.
     ctrl_thread = threading.Thread(target=recv_control)
     video_thread = threading.Thread(target=video_process)
