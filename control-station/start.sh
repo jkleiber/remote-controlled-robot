@@ -5,6 +5,9 @@ DOCKER_CONTAINER="teleop-container"
 docker stop ${DOCKER_CONTAINER}
 docker rm ${DOCKER_CONTAINER}
 
+# Copy the common files to this directory
+cp -r ../common ./common
+
 # Run the container
 docker run \
     --name ${DOCKER_CONTAINER} \
