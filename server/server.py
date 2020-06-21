@@ -1,4 +1,5 @@
 
+import errno
 import json
 import socket
 import threading
@@ -45,10 +46,9 @@ def control_passthrough():
         try:
             data, addr = ctrl_recv_sock.recvfrom(256)
             print(str(data.decode()) + ' from ' + str(addr))
-        except socket.timeout as e:
-            pass
-        except Exception as e:
-            print("Control Receive Error: " + str(e))
+        except socket.error as e:
+            if e.errno != errno.EAGAIN:
+                print("Control Receive Error: " + str(e))
         # If everything went well, establish the control data as the packet.
         else:
             ctrl_pkt = data

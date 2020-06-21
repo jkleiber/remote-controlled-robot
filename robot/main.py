@@ -1,4 +1,5 @@
 import cv2
+import errno
 import json
 import numpy as np
 import serial
@@ -19,6 +20,7 @@ ctrl_sock.setblocking(False)
 
 # Heartbeat
 heart_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+heart_sock.setblocking(True)
 
 # Video.
 video_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -46,10 +48,9 @@ def recv_control():
         # Receive the control data.
         try:
             data, addr = ctrl_sock.recvfrom(256)
-        except socket.timeout as e:
-            print("Receiver Timeout: " + str(e))
-        except Exception as e:
-            print("Receiver Error: " + str(e))
+        except socket.error as e:
+            if e.errno != errno.EAGAIN:
+                print("Receiver Error: " + str(e))
 
         # Make controls into meaningful robot messages.
         recv_dict = json.loads(data)
