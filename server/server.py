@@ -51,7 +51,7 @@ def control_passthrough():
                 print("Control Receive Error: " + str(e))
         # If everything went well, establish the control data as the packet.
         else:
-            ctrl_pkt = data
+            ctrl_pkt = data.decode()
 
         # Process the control packet.
         ctrl_str = json.dumps(ctrl_pkt).encode()
