@@ -8,6 +8,9 @@ docker build . -t ${DOCKER_IMG}
 docker stop ${CONTAINER_NAME}
 docker rm ${CONTAINER_NAME}
 
+# Copy the common files to this directory.
+cp -r ../common ./common
+
 # Run the VPN.
 sudo wg-quick up wg0
 

@@ -7,6 +7,8 @@ import socket
 import threading
 import time
 
+from common.gamepad import LogitechF310State
+
 # Control station connection info, based on VPN setup.
 robot_ip = "0.0.0.0"
 control_ip = "10.0.0.2"
@@ -35,6 +37,9 @@ robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=115200)
 ### Set up videocapture.
 cap = cv2.VideoCapture(0)
 
+### Game Controller
+default_pkt = LogitechF310State()
+
 def video_process():
     ret, frame = cap.read()
 
@@ -46,7 +51,10 @@ def video_process():
         print('Invalid video frame')
 
 def recv_control():
-    # Receive the control data.
+    # Set the receive to the default.
+    recv_dict = vars(default_pkt)
+
+    # Attempt to receive the control data.
     try:
         data, addr = ctrl_sock.recvfrom(256)
         print(data.decode())
@@ -56,20 +64,22 @@ def recv_control():
     else:
         # Make controls into meaningful robot messages.
         recv_dict = json.loads(data)
-        turn = recv_dict['ABS_RX'] / 32768
-        power = recv_dict['ABS_Y'] / 32768
 
-        # Form the robot input dictionary.
-        ctrl_dict = {}
-        ctrl_dict['power'] = power
-        ctrl_dict['turn'] = turn
+    # Find the appropriate control from the given packet.
+    turn = recv_dict['ABS_RX'] / 32768
+    power = recv_dict['ABS_Y'] / 32768
 
-        # Convert to string
-        ctrl_string = json.dumps(ctrl_dict)
-        print(ctrl_string)
+    # Form the robot input dictionary.
+    ctrl_dict = {}
+    ctrl_dict['power'] = power
+    ctrl_dict['turn'] = turn
 
-        # Publish to the robot.
-        robot_usb.write(ctrl_string)
+    # Convert to string
+    ctrl_string = json.dumps(ctrl_dict)
+    print(ctrl_string)
+
+    # Publish to the robot.
+    robot_usb.write(ctrl_string)
 
 def heartbeat():
     beat_str = "heartbeat".encode()
@@ -79,14 +89,15 @@ def heartbeat():
         print("Heartbeat Error: " + str(e))
 
 def main_loop():
-    # Get control data.
-    recv_control()
+    while True:
+        # Get control data.
+        recv_control()
 
-    # Get video.
-    video_process()
+        # Get video.
+        video_process()
 
-    # Send heartbeat back to control station.
-    heartbeat()
+        # Send heartbeat back to control station.
+        heartbeat()
 
 
 if __name__=="__main__":
