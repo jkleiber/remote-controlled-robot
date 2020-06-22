@@ -50,6 +50,7 @@ def recv_control():
         # Receive the control data.
         try:
             data, addr = ctrl_sock.recvfrom(256)
+            print(data.decode())
         except socket.error as e:
             if e.errno != errno.EAGAIN:
                 print("Receiver Error: " + str(e))
@@ -57,7 +58,7 @@ def recv_control():
             # Make controls into meaningful robot messages.
             recv_dict = json.loads(data)
             turn = recv_dict['ABS_RX'] / 32768
-            power = recv_dict['ABS_Y']
+            power = recv_dict['ABS_Y'] / 32768
 
             # Form the robot input dictionary.
             ctrl_dict = {}
