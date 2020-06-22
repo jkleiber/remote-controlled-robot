@@ -74,8 +74,8 @@ def recv_control():
     ctrl_dict['power'] = power
     ctrl_dict['turn'] = turn
 
-    # Convert to string
-    ctrl_string = json.dumps(ctrl_dict)
+    # Convert to byte array for serial output.
+    ctrl_string = json.dumps(ctrl_dict).encode()
     print(ctrl_string)
 
     # Publish to the robot.
