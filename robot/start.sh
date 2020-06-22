@@ -8,6 +8,9 @@ docker build . -t ${DOCKER_IMG}
 docker stop ${CONTAINER_NAME}
 docker rm ${CONTAINER_NAME}
 
+# Run the VPN.
+sudo wg-quick up wg0
+
 # Run the image inside the specified container
 docker run \
     -v /dev:/dev \
@@ -16,3 +19,6 @@ docker run \
     --privileged \
     --name ${CONTAINER_NAME} \
     ${DOCKER_IMG}
+
+# Stop the VPN.
+sudo wg-quick down wg0

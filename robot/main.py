@@ -7,15 +7,17 @@ import socket
 import threading
 import time
 
-# Server info.
-server_host = "kleiber.xyz"
-server_port = 5001
-server_conn = (server_host, server_port)
+# Robot connection info, based on VPN setup.
+control_ip = "10.0.0.2"
+control_port = 5001
+control_conn = (control_ip, control_port)
+heart_port = 5002
+heart_conn = (control_ip, heart_port)
 
 ### Set up UDP sockets.
 # Control.
 ctrl_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-ctrl_sock.bind(server_conn)
+ctrl_sock.bind(control_conn)
 ctrl_sock.setblocking(False)
 
 # Heartbeat
@@ -73,7 +75,7 @@ def heartbeat():
         beat_str = "heartbeat".encode()
 
         try:
-            heart_sock.sendto(beat_str, server_conn)
+            heart_sock.sendto(beat_str, heart_conn)
         except Exception as e:
             print("Heartbeat Error: " + str(e))
 

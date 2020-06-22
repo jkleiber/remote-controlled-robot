@@ -11,7 +11,8 @@ COPY Pipfile.lock Pipfile.lock
 RUN pipenv sync --dev
 
 # Expose ports
-EXPOSE 2723
+EXPOSE 5001/udp
+EXPOSE 5002/udp
 
 # Setup run command for control station
 CMD ["pipenv", "run", "python3", "-u", "main.py"]

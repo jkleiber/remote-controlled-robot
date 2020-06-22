@@ -9,7 +9,7 @@ from inputs import get_gamepad
 from common.gamepad import LogitechF310Mapper
 
 # Server info
-server_addr = "kleiber.xyz"
+server_addr = "10.0.0.3"
 server_port = 5001
 
 # Set up UDP client for joystick data
