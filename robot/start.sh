@@ -17,7 +17,6 @@ docker run \
     -v $(pwd):/app \
     -p 5001:5001 \
     -p 5002:5002 \
-    -p 5003:5003 \
     --privileged \
     --name ${CONTAINER_NAME} \
     ${DOCKER_IMG}

@@ -7,10 +7,11 @@ import socket
 import threading
 import time
 
-# Robot connection info, based on VPN setup.
+# Control station connection info, based on VPN setup.
+robot_ip = "0.0.0.0"
 control_ip = "10.0.0.2"
 control_port = 5001
-control_conn = (control_ip, control_port)
+control_conn = (robot_ip, control_port)
 heart_port = 5002
 heart_conn = (control_ip, heart_port)
 
