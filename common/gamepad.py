@@ -37,6 +37,7 @@ class LogitechF310State(dict):
 class LogitechF310Mapper:
     def __init__(self):
         self.gamepad_state = LogitechF310State()
+        self.relevant_keys = set()
 
     def update(self, event_list):
         for event in event_list:
@@ -45,3 +46,18 @@ class LogitechF310Mapper:
     def get_state(self):
         return vars(self.gamepad_state)
 
+    def set_relevant(self, key):
+        self.relevant_keys.add(key)
+
+    def update_relevant(self, event_list):
+        for event in event_list:
+            if event.code in self.relevant_keys:
+                self.gamepad_state[event.code] = event.state
+
+    def get_relevant_state(self):
+        key_list = list(self.relevant_keys)
+        relevant_dict = {}
+        for key in key_list:
+            relevant_dict[key] = self.gamepad_state[key]
+
+        return relevant_dict
