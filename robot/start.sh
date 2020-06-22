@@ -21,6 +21,7 @@ docker run \
     -p 5001:5001 \
     -p 5002:5002 \
     --privileged \
+    --net=host \
     --name ${CONTAINER_NAME} \
     ${DOCKER_IMG}
 
