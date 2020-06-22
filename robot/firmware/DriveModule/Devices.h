@@ -13,8 +13,8 @@ static QuadratureEncoder right_encoder;// 2-7/8" wheel, rotated 3 times, encoder
 
 
 // Motors
-static Motor left_motor;
-static Motor right_motor;
+Motor left_motor;
+Motor right_motor;
 
 
 //IMU

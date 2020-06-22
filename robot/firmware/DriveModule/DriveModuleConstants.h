@@ -20,7 +20,7 @@
 // Timing Constants
 #define MILLIS_PER_SECOND 1000
 #define LOOP_RATE   200
-#define LOOP_PERIOD (float)((1.0f * MILLIS_PER_SECOND) / (float)LOOP_RATE)
+#define LOOP_PERIOD (unsigned long)((1 * MILLIS_PER_SECOND) / LOOP_RATE)
 
 
 #endif

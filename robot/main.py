@@ -59,7 +59,7 @@ def recv_control():
 
     # Attempt to receive the control data.
     try:
-        data, addr = ctrl_sock.recvfrom(1024)
+        data, addr = ctrl_sock.recvfrom(512)
     except socket.error as e:
         if e.errno != errno.EAGAIN:
             print("Receiver Error: " + str(e))
@@ -80,6 +80,7 @@ def recv_control():
     ctrl_string = json.dumps(ctrl_dict).encode()
     print(ctrl_string)
 
+    # print(robot_usb.out_waiting)
     # Publish to the robot.
     robot_usb.write(ctrl_string)
 
@@ -99,10 +100,10 @@ def main_loop():
         recv_control()
 
         # Get video.
-        video_process()
+        # video_process()
 
         # Send heartbeat back to control station.
-        heartbeat()
+        # heartbeat()
 
         # Slow down the loop
         # Sleep until the period is up.
@@ -114,5 +115,8 @@ def main_loop():
 
 
 if __name__=="__main__":
+    # Add time after start for the devices to initialize.
+    time.sleep(1)
+
     # Start looping.
     main_loop()
