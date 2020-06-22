@@ -9,6 +9,9 @@ import time
 
 from common.gamepad import LogitechF310State
 
+# Loop control period
+LOOP_PERIOD = 0.02
+
 # Control station connection info, based on VPN setup.
 robot_ip = "0.0.0.0"
 control_ip = "10.0.0.2"
@@ -88,6 +91,9 @@ def heartbeat():
         print("Heartbeat Error: " + str(e))
 
 def main_loop():
+    # Limit the loop rate for control
+    # TODO: do something better than this (i.e. multiprocess)
+    start_time = 0
     while True:
         # Get control data.
         recv_control()
@@ -97,6 +103,14 @@ def main_loop():
 
         # Send heartbeat back to control station.
         heartbeat()
+
+        # Slow down the loop
+        # Sleep until the period is up.
+        while (time.time() - start_time) < LOOP_PERIOD:
+            continue
+
+        # Set the start time for the next loop
+        start_time = time.time()
 
 
 if __name__=="__main__":
