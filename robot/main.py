@@ -36,63 +36,59 @@ robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=115200)
 cap = cv2.VideoCapture(0)
 
 def video_process():
-    while True:
-        ret, frame = cap.read()
+    ret, frame = cap.read()
 
-        # Only use valid frames.
-        if ret:
-            data = frame.flatten()
-            data = data.tostring() #.encode()
-        else:
-            print('Invalid video frame')
+    # Only use valid frames.
+    if ret:
+        data = frame.flatten()
+        data = data.tostring() #.encode()
+    else:
+        print('Invalid video frame')
 
 def recv_control():
-    while True:
-        # Receive the control data.
-        try:
-            data, addr = ctrl_sock.recvfrom(256)
-            print(data.decode())
-        except socket.error as e:
-            if e.errno != errno.EAGAIN:
-                print("Receiver Error: " + str(e))
-        else:
-            # Make controls into meaningful robot messages.
-            recv_dict = json.loads(data)
-            turn = recv_dict['ABS_RX'] / 32768
-            power = recv_dict['ABS_Y'] / 32768
+    # Receive the control data.
+    try:
+        data, addr = ctrl_sock.recvfrom(256)
+        print(data.decode())
+    except socket.error as e:
+        if e.errno != errno.EAGAIN:
+            print("Receiver Error: " + str(e))
+    else:
+        # Make controls into meaningful robot messages.
+        recv_dict = json.loads(data)
+        turn = recv_dict['ABS_RX'] / 32768
+        power = recv_dict['ABS_Y'] / 32768
 
-            # Form the robot input dictionary.
-            ctrl_dict = {}
-            ctrl_dict['power'] = power
-            ctrl_dict['turn'] = turn
+        # Form the robot input dictionary.
+        ctrl_dict = {}
+        ctrl_dict['power'] = power
+        ctrl_dict['turn'] = turn
 
-            # Convert to string
-            ctrl_string = json.dumps(ctrl_dict)
-            print(ctrl_string)
+        # Convert to string
+        ctrl_string = json.dumps(ctrl_dict)
+        print(ctrl_string)
 
-            # Publish to the robot.
-            robot_usb.write(ctrl_string)
+        # Publish to the robot.
+        robot_usb.write(ctrl_string)
 
 def heartbeat():
-    while True:
-        beat_str = "heartbeat".encode()
+    beat_str = "heartbeat".encode()
+    try:
+        heart_sock.sendto(beat_str, heart_conn)
+    except Exception as e:
+        print("Heartbeat Error: " + str(e))
 
-        try:
-            heart_sock.sendto(beat_str, heart_conn)
-        except Exception as e:
-            print("Heartbeat Error: " + str(e))
+def main_loop():
+    # Get control data.
+    recv_control()
 
-        # Wait one second
-        time.sleep(1)
+    # Get video.
+    video_process()
+
+    # Send heartbeat back to control station.
+    heartbeat()
 
 
 if __name__=="__main__":
-    # Initialize threads for the remote control receiver.
-    ctrl_thread = threading.Thread(target=recv_control)
-    video_thread = threading.Thread(target=video_process)
-    heartbeat_thread = threading.Thread(target=heartbeat)
-
-    # Start the threads
-    ctrl_thread.start()
-    video_thread.start()
-    heartbeat_thread.start()
+    # Start looping.
+    main_loop()
