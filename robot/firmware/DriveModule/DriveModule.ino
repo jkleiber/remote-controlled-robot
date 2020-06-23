@@ -22,7 +22,7 @@
 
 // Arduino JSON packets
 StaticJsonDocument<256> control_pkt;
-
+char serial_buffer[256];
 
 // Track control loop timing
 unsigned long last_loop_time;
@@ -66,9 +66,35 @@ void loop()
     // this will reset the power to 0 on the next loop.
     if(Serial.available() > 0)
     {
-        // Update the drivetrain controls.
-        turn = control_pkt["turn"].as<float>();
-        power = control_pkt["power"].as<float>();
+        // Collect JSON string
+        Serial.readBytesUntil('\n', serial_buffer, 256);
+
+        // Print buffer
+        Serial.print(serial_buffer);
+
+        // Deserialization
+        DeserializationError error = deserializeJson(control_pkt, serial_buffer);
+
+        if(error)
+        {
+            Serial.print(F("deserializeJson() failed: "));
+            Serial.println(error.c_str());
+
+            // Stop robot for safety.
+            turn = 0.0;
+            power = 0.0;
+        }
+        else
+        {
+            // Update the drivetrain controls.
+            turn = control_pkt["turn"].as<float>();
+            power = control_pkt["power"].as<float>();
+
+            // Response (for testing).
+            Serial.print(power);
+            Serial.print("\t");
+            Serial.println(turn);
+        }
     }
 
     // Apply motor power using arcade drive.

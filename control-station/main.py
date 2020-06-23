@@ -45,8 +45,6 @@ def udp_loop():
         gamepad_dict = gamepad.get_relevant_state()
         # TODO: add timestamp for packet watchdog
 
-        print(gamepad_dict)
-
         # Send the gamepad state as a JSON string.
         control_pkt = json.dumps(gamepad_dict).encode()
         udp_sock.sendto(control_pkt, (server_addr, server_port))
