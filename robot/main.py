@@ -38,7 +38,7 @@ video_sock.settimeout(1) # 1 sec timeout.
 robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=38400)
 
 ### Set up videocapture.
-cap = cv2.VideoCapture(0)
+# cap = cv2.VideoCapture(0)
 
 ### Game Controller
 default_pkt = LogitechF310State()
