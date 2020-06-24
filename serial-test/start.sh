@@ -1,5 +1,5 @@
-DOCKER_IMG="server_image:latest"
-CONTAINER_NAME="server_udp_container"
+DOCKER_IMG="serial_test_image:latest"
+CONTAINER_NAME="serial_test_container"
 
 # Build the image
 docker build . -t ${DOCKER_IMG}
@@ -10,8 +10,8 @@ docker rm ${CONTAINER_NAME}
 
 # Run the image inside the specified container
 docker run \
-    -v $(pwd):/server \
-    -p 5001:5001 \
+    -v /dev:/dev \
+    -v $(pwd):/test \
     --privileged \
     --net=host \
     --name ${CONTAINER_NAME} \
