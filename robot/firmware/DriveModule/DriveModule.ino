@@ -14,6 +14,7 @@
 // Arduino dependencies
 #include <ArduinoJson.h>
 #include <RobotLib.h>
+#include <StreamUtils.h>
 
 // Shamrock Drive Module Code
 #include "Devices.h"
@@ -21,8 +22,8 @@
 #include "SensorManagement.h"
 
 // Arduino JSON packets
-StaticJsonDocument<256> control_pkt;
-char serial_buffer[256];
+ReadBufferingStream serial_buffer(Serial, 64);
+StaticJsonDocument<64> control_pkt;
 
 // Track control loop timing
 unsigned long last_loop_time;
@@ -33,6 +34,13 @@ float turn = 0.0;
 float power = 0.0;
 
 
+long timeit(long last_time)
+{
+    Serial.print(millis() - last_time);
+    Serial.print(" ");
+    return millis();
+}
+
 /**
  * @brief Set up the program
  *
@@ -40,10 +48,15 @@ float power = 0.0;
 void setup()
 {
     // Initialize Serial.
-    Serial.begin(115200);
+    Serial.begin(38400);
 
     // Initialize the devices
     device_init();
+
+    // Wait for Serial to be ready
+    while(!Serial){
+        delay(1);
+    }
 
     // Start loop timing
     last_loop_time = millis();
@@ -62,18 +75,14 @@ void loop()
     // TODO: send sensor data to raspberry pi
 
     // Receive commands from raspberry pi.
-    // Note: data must be sent with no newline or else
-    // this will reset the power to 0 on the next loop.
-    if(Serial.available() > 0)
+    if(serial_buffer.available())
     {
-        // Collect JSON string
-        Serial.readBytesUntil('\n', serial_buffer, 256);
-
-        // Print buffer
-        Serial.print(serial_buffer);
+        // long step = millis();
 
         // Deserialization
         DeserializationError error = deserializeJson(control_pkt, serial_buffer);
+
+        // step = timeit(step);
 
         if(error)
         {
@@ -91,9 +100,9 @@ void loop()
             power = control_pkt["power"].as<float>();
 
             // Response (for testing).
-            Serial.print(power);
-            Serial.print("\t");
-            Serial.println(turn);
+            // Serial.print(power);
+            // Serial.print("\t");
+            // Serial.println(turn);
         }
     }
 

@@ -2,7 +2,7 @@ import json
 import serial
 import time
 
-port = serial.Serial(port='/dev/ttyUSB0', baudrate=115200)
+port = serial.Serial(port='/dev/ttyUSB0', baudrate=38400)
 
 if __name__ == "__main__":
     time.sleep(1)

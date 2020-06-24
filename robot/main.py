@@ -35,7 +35,7 @@ video_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 video_sock.settimeout(1) # 1 sec timeout.
 
 ### Robot serial ports.
-robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=115200)
+robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=38400)
 
 ### Set up videocapture.
 cap = cv2.VideoCapture(0)
@@ -78,13 +78,9 @@ def recv_control():
 
     # Convert to byte array for serial output.
     ctrl_string = json.dumps(ctrl_dict).encode()
-    print(ctrl_string)
 
-    print(robot_usb.out_waiting)
     # Publish to the robot.
     robot_usb.write(ctrl_string)
-    data = robot_usb.read_until()
-    print(f'Response: {data}')
 
 def heartbeat():
     beat_str = "heartbeat".encode()
