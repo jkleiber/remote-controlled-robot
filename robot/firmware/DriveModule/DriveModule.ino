@@ -48,7 +48,7 @@ long timeit(long last_time)
 void setup()
 {
     // Initialize Serial.
-    Serial.begin(38400);
+    Serial.begin(9600);
 
     // Initialize the devices
     device_init();

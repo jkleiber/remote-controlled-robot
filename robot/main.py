@@ -35,7 +35,7 @@ video_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 video_sock.settimeout(1) # 1 sec timeout.
 
 ### Robot serial ports.
-robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=38400)
+robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=9600)#38400)
 
 ### Set up videocapture.
 # cap = cv2.VideoCapture(0)
