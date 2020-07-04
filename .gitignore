@@ -1,6 +1,6 @@
 .vscode/
 
 # Remove common file copies
-server/common/
+vpn-test/common/
 control-station/common/
 robot/common/
