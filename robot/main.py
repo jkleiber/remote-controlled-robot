@@ -10,7 +10,7 @@ import time
 from common.gamepad import LogitechF310State
 
 # Loop control period
-LOOP_PERIOD = 0.02
+LOOP_PERIOD = 0.01
 
 # Control station connection info, based on VPN setup.
 robot_ip = "0.0.0.0"
@@ -41,7 +41,11 @@ robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=9600)#38400)
 # cap = cv2.VideoCapture(0)
 
 ### Game Controller
-default_pkt = LogitechF310State()
+current_data = LogitechF310State()
+
+# Skipped messages tracker
+num_skipped = 0
+SKIP_LIMIT = 5
 
 def video_process():
     ret, frame = cap.read()
@@ -54,8 +58,7 @@ def video_process():
         print('Invalid video frame')
 
 def recv_control():
-    # Set the receive to the default.
-    recv_dict = vars(default_pkt)
+    global num_skipped
 
     # Attempt to receive the control data.
     try:
@@ -63,13 +66,26 @@ def recv_control():
     except socket.error as e:
         if e.errno != errno.EAGAIN:
             print("Receiver Error: " + str(e))
+        num_skipped += 1
     else:
         # Make controls into meaningful robot messages.
         recv_dict = json.loads(data)
 
+        # Update data.
+        current_data.ABS_RX = recv_dict['ABS_RX']
+        current_data.ABS_Y = recv_dict['ABS_Y']
+
+        # Reset skipped message tracker.
+        num_skipped = 0
+
+    # If we have skipped too many messages, stop the robot.
+    if num_skipped > SKIP_LIMIT:
+        current_data.ABS_RX = 0
+        current_data.ABS_Y = 0
+
     # Find the appropriate control from the given packet.
-    turn = int(recv_dict['ABS_RX']) / 32768
-    power = int(recv_dict['ABS_Y']) / 32768
+    turn = -1 * round(current_data.ABS_RX / 32768, 5)
+    power = round(current_data.ABS_Y / 32768, 5)
 
     # Form the robot input dictionary.
     ctrl_dict = {}
@@ -77,7 +93,9 @@ def recv_control():
     ctrl_dict['turn'] = turn
 
     # Convert to byte array for serial output.
-    ctrl_string = json.dumps(ctrl_dict).encode()
+    ctrl_string = (json.dumps(ctrl_dict) + "\n").encode()
+
+    print(ctrl_string)
 
     # Publish to the robot.
     robot_usb.write(ctrl_string)
@@ -108,7 +126,7 @@ def main_loop():
         # while (time.time() - start_time) < LOOP_PERIOD:
             # continue
 
-        time.sleep(0.02)
+        time.sleep(LOOP_PERIOD)
 
         # Set the start time for the next loop
         start_time = time.time()
