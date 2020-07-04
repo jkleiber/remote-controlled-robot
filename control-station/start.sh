@@ -16,6 +16,7 @@ docker run \
     --name ${DOCKER_CONTAINER} \
     -v $(pwd):/teleop \
     -v /dev:/dev \
+    -p 5003:5003 \
     --privileged \
     ${DOCKER_IMG}
 

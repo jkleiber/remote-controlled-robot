@@ -11,16 +11,21 @@ from common.gamepad import LogitechF310Mapper
 # Server info
 server_addr = "10.0.0.3"
 server_port = 5001
+recv_port = 5003
 
 # Set up UDP client for joystick data
 udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp_sock.setblocking(False)
 
+recv_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+recv_sock.bind(('0.0.0.0', recv_port))
+recv_sock.setblocking(False)
+
 # Set up the gamepad processor
 gamepad = LogitechF310Mapper()
 
 # UDP loop update period
-UDP_SEND_PERIOD = 0.02  # 10 ms -> 100Hz
+UDP_SEND_PERIOD = 0.05  # 10 ms -> 100Hz
 
 # Relevant keys from gamepad
 relevant_gamepad = ["ABS_Y", "ABS_RX"]
@@ -46,7 +51,7 @@ def udp_loop():
         # TODO: add timestamp for packet watchdog
 
         # Send the gamepad state as a JSON string.
-        control_pkt = json.dumps(gamepad_dict).encode()
+        control_pkt = (json.dumps(gamepad_dict) +"\r\n").encode()
         udp_sock.sendto(control_pkt, (server_addr, server_port))
 
         # Sleep until the period is up.
@@ -55,6 +60,13 @@ def udp_loop():
 
         # Set the start time for the next loop
         start_time = time.time()
+
+        try:
+            data = recv_sock.recvfrom(128)
+        except Exception as e:
+            continue
+        else:
+            print("Data: " + data.decode())
 
 
 if __name__ == "__main__":
