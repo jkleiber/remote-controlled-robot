@@ -1,0 +1,1 @@
+TODO: Make a readme and/or scripts from this: https://linuxize.com/post/how-to-set-up-wireguard-vpn-on-ubuntu-18-04/
