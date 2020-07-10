@@ -15,10 +15,13 @@ LOOP_PERIOD = 0.01
 # Control station connection info, based on VPN setup.
 robot_ip = "0.0.0.0"
 control_ip = "10.0.0.2"
+video_ip = "10.0.0.1"
 control_port = 5001
 control_conn = (robot_ip, control_port)
 heart_port = 5002
 heart_conn = (control_ip, heart_port)
+video_port = 6000
+video_conn = (video_ip, video_port)
 
 ### Set up UDP sockets.
 # Control.
@@ -35,10 +38,10 @@ video_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 video_sock.settimeout(1) # 1 sec timeout.
 
 ### Robot serial ports.
-robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=9600)#38400)
+robot_usb = None
 
 ### Set up videocapture.
-# cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
 ### Game Controller
 current_data = LogitechF310State()
@@ -95,10 +98,15 @@ def recv_control():
     # Convert to byte array for serial output.
     ctrl_string = (json.dumps(ctrl_dict) + "\n").encode()
 
-    print(ctrl_string)
-
-    # Publish to the robot.
-    robot_usb.write(ctrl_string)
+    # Publish commands to the robot.
+    try:
+        robot_usb.write(ctrl_string)
+    except:
+        # If there is a serial error, just fail silently for now.
+        pass
+    else:
+        # If the data was written successfully, show the output
+        print(ctrl_string)
 
 def heartbeat():
     beat_str = "heartbeat".encode()
@@ -132,7 +140,16 @@ def main_loop():
         start_time = time.time()
 
 
+def initialize():
+    try:
+        robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=9600)#38400)
+    except Exception as e:
+        print(f"Serial Error: {e}. Serial may be unavailable")
+
 if __name__=="__main__":
+    # Initialize devices
+    initialize()
+
     # Add time after start for the devices to initialize.
     time.sleep(1)
 

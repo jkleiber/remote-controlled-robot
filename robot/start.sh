@@ -1,8 +1,24 @@
-DOCKER_IMG="robot_client_image:latest"
+DOCKER_BASE_IMG="robot_client_image"
 CONTAINER_NAME="rc_udp_container"
 
+# Get the build mode for the image
+BUILD_MODE="$1"
+
+# Default build directory
+BUILD_DIR="robot-base/"
+BUILD_TAG="latest"
+
+# Developer mode
+if [ "$BUILD_MODE" = "dev" ]; then
+    BUILD_DIR="robot-dev/"
+    BUILD_TAG="dev"
+fi
+
+# Docker image and tag
+DOCKER_IMG="${DOCKER_BASE_IMG}:${BUILD_TAG}"
+
 # Build the image
-docker build . -t ${DOCKER_IMG}
+docker build $BUILD_DIR -t ${DOCKER_IMG}
 
 # Stop and delete any old containers
 docker stop ${CONTAINER_NAME}
@@ -23,7 +39,7 @@ docker run \
     --privileged \
     --net=host \
     --name ${CONTAINER_NAME} \
-    ${DOCKER_IMG}
+    "${DOCKER_IMG}"
 
 # Stop the VPN.
 sudo wg-quick down wg0
