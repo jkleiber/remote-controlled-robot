@@ -1,0 +1,13 @@
+<html>
+
+<script>
+setInterval(function() {
+    var myImageElement = document.getElementById('video-stream');
+    myImageElement.src = '/stream?rand=' + Math.random();
+}, 175);
+</script>
+
+<body>
+    <img id="video-stream" src="/stream"/>
+</body>
+</html>

@@ -4,3 +4,9 @@
 vpn-test/common/
 control-station/common/
 robot/common/
+
+# Ignore private SSL certificates
+certs/
+*.crt
+*.key
+*.csr

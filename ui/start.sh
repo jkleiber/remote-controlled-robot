@@ -15,10 +15,9 @@ docker rm ${CONTAINER_NAME}
 
 # Run the image inside the specified container
 docker run \
-    -v /dev:/dev \
-    -v $(pwd):/app \
-    -p 6000:6000 \
-    --privileged \
+    -v $(pwd):/ui \
+    -p 4200:4200 \
+    -p 4201:4201 \
     --net=host \
     --name ${CONTAINER_NAME} \
     "${DOCKER_IMG}"
