@@ -5,13 +5,15 @@ import cv2
 import imagezmq
 import socket
 
+cv2.destroyAllWindows()
+
 # Video capture
 cap = cv2.VideoCapture(0)
 
 # sender = imagezmq.ImageSender(connect_to='tcp://kleiber.xyz:4200')
 
 local_host = socket.gethostname()
-jpeg_quality = 90
+jpeg_quality = 50
 
 while True:  # press Ctrl-C to stop image sending program
     # Capture video frame
@@ -21,14 +23,14 @@ while True:  # press Ctrl-C to stop image sending program
         break
 
     # Encode to JPG
-    # ret_code, jpg_buffer = cv2.imencode(
-    #     ".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality])
+    ret_code, jpg_buffer = cv2.imencode(
+        ".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality])
 
     # Send JPG
     # try:
     #     sender.send_jpg(local_host, jpg_buffer)
     # except Exception as e:
     #     print(f"ZMQ send failed! {e}")
-    sys.stdout.write( str(frame.tobytes()) )
+    sys.stdout.buffer.write( jpg_buffer.tobytes() )
 
 cv2.destroyAllWindows()
