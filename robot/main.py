@@ -115,7 +115,7 @@ def main_loop():
         recv_control()
 
         # Get video.
-        video_process()
+        # video_process()
 
         # Send heartbeat back to control station.
         # heartbeat()
@@ -147,6 +147,10 @@ if __name__=="__main__":
     # Main thread
     main_thread = threading.Thread(target=main_loop)
     main_thread.start()
+
+    # Video thread
+    video_thread = threading.Thread(target=video_process)
+    video_thread.start()
 
     # Flask Thread
     UIServer.start()
