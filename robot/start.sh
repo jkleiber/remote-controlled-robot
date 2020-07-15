@@ -1,5 +1,5 @@
-DOCKER_BASE_IMG="robot_client_image"
-CONTAINER_NAME="rc_udp_container"
+DOCKER_BASE_IMG="robot-image"
+CONTAINER_NAME="robot-container"
 
 # Get the build mode for the image
 BUILD_MODE="$1"
@@ -16,6 +16,9 @@ fi
 
 # Docker image and tag
 DOCKER_IMG="${DOCKER_BASE_IMG}:${BUILD_TAG}"
+
+# Move dependencies into the docker build context
+cp Pipfile* $BUILD_DIR/
 
 # Build the image
 docker build $BUILD_DIR -t ${DOCKER_IMG}
@@ -34,6 +37,7 @@ sudo wg-quick up wg0
 docker run \
     -v /dev:/dev \
     -v $(pwd):/app \
+    -p 5000:5000 \
     -p 5001:5001 \
     -p 5002:5002 \
     --privileged \

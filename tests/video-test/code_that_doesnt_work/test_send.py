@@ -13,7 +13,7 @@ cap = cv2.VideoCapture(0)
 # sender = imagezmq.ImageSender(connect_to='tcp://kleiber.xyz:4200')
 
 local_host = socket.gethostname()
-jpeg_quality = 50
+jpeg_quality = 90
 
 while True:  # press Ctrl-C to stop image sending program
     # Capture video frame

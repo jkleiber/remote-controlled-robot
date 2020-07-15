@@ -7,6 +7,12 @@ verify_ssl = true
 
 [packages]
 pyserial = "*"
+numpy = "*"
+flask = "*"
+opencv-python = "*"
+gunicorn = "==17.5"
+paste = "*"
+pastedeploy = "*"
 
 [requires]
 python_version = "3.8"

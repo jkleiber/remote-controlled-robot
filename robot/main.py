@@ -6,6 +6,7 @@ import serial
 import socket
 import threading
 import time
+import ui.ui as UIServer
 
 from common.gamepad import LogitechF310State
 
@@ -15,13 +16,10 @@ LOOP_PERIOD = 0.01
 # Control station connection info, based on VPN setup.
 robot_ip = "0.0.0.0"
 control_ip = "10.0.0.2"
-video_ip = "10.0.0.1"
 control_port = 5001
 control_conn = (robot_ip, control_port)
 heart_port = 5002
 heart_conn = (control_ip, heart_port)
-video_port = 6000
-video_conn = (video_ip, video_port)
 
 ### Set up UDP sockets.
 # Control.
@@ -33,15 +31,12 @@ ctrl_sock.setblocking(False)
 heart_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 heart_sock.setblocking(True)
 
-# Video.
-video_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-video_sock.settimeout(1) # 1 sec timeout.
-
 ### Robot serial ports.
 robot_usb = None
 
 ### Set up videocapture.
 cap = cv2.VideoCapture(0)
+frame = None
 
 ### Game Controller
 current_data = LogitechF310State()
@@ -51,14 +46,10 @@ num_skipped = 0
 SKIP_LIMIT = 5
 
 def video_process():
-    ret, frame = cap.read()
-
-    # Only use valid frames.
-    if ret:
-        data = frame.flatten()
-        data = data.tostring() #.encode()
-    else:
-        print('Invalid video frame')
+    global frame
+    while True:
+        ret, frame = cap.read()
+        UIServer.update_frame(frame)
 
 def recv_control():
     global num_skipped
@@ -124,7 +115,7 @@ def main_loop():
         recv_control()
 
         # Get video.
-        # video_process()
+        video_process()
 
         # Send heartbeat back to control station.
         # heartbeat()
@@ -153,5 +144,9 @@ if __name__=="__main__":
     # Add time after start for the devices to initialize.
     time.sleep(1)
 
-    # Start looping.
-    main_loop()
+    # Main thread
+    main_thread = threading.Thread(target=main_loop)
+    main_thread.start()
+
+    # Flask Thread
+    UIServer.start()
