@@ -50,7 +50,7 @@ def video_process():
         UIServer.update_frame(frame)
 
 def recv_control():
-    global num_skipped
+    global num_skipped, robot_usb
 
     # Attempt to receive the control data.
     try:
@@ -90,9 +90,10 @@ def recv_control():
     # Publish commands to the robot.
     try:
         robot_usb.write(ctrl_string)
-    except:
+    except Exception as e:
         # If there is a serial error, just fail silently for now.
-        pass
+        print(f'Serial FAIL: {e}')
+        # pass
     else:
         # If the data was written successfully, show the output
         print(ctrl_string)
@@ -112,9 +113,6 @@ def main_loop():
         # Get control data.
         recv_control()
 
-        # Get video.
-        # video_process()
-
         # Send heartbeat back to control station.
         # heartbeat()
 
@@ -130,6 +128,8 @@ def main_loop():
 
 
 def initialize():
+    global robot_usb
+
     try:
         robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=9600)#38400)
     except Exception as e:
@@ -151,4 +151,5 @@ if __name__=="__main__":
     video_thread.start()
 
     # Flask Thread
-    UIServer.start()
+    flask_thread = threading.Thread(target=UIServer.start)
+    flask_thread.start()
