@@ -36,7 +36,6 @@ robot_usb = None
 
 ### Set up videocapture.
 cap = cv2.VideoCapture(0)
-frame = None
 
 ### Game Controller
 current_data = LogitechF310State()
@@ -46,7 +45,6 @@ num_skipped = 0
 SKIP_LIMIT = 5
 
 def video_process():
-    global frame
     while True:
         ret, frame = cap.read()
         UIServer.update_frame(frame)
