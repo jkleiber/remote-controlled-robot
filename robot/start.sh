@@ -30,13 +30,11 @@ docker rm ${CONTAINER_NAME}
 # Copy the common files to this directory.
 cp -r ../common ./common
 
-# Run the VPN.
-sudo wg-quick up wg0
-
 # Run the image inside the specified container
 docker run \
+    -d \
     -v /dev:/dev \
-    -v $(pwd):/app \
+    -v $(pwd):/robot \
     -p 5000:5000 \
     -p 5001:5001 \
     -p 5002:5002 \
@@ -44,6 +42,3 @@ docker run \
     --net=host \
     --name ${CONTAINER_NAME} \
     "${DOCKER_IMG}"
-
-# Stop the VPN.
-sudo wg-quick down wg0
