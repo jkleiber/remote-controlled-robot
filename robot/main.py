@@ -6,6 +6,7 @@ import serial
 import socket
 import threading
 import time
+import ui.ui as UIServer
 
 from common.gamepad import LogitechF310State
 
@@ -30,15 +31,11 @@ ctrl_sock.setblocking(False)
 heart_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 heart_sock.setblocking(True)
 
-# Video.
-video_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-video_sock.settimeout(1) # 1 sec timeout.
-
 ### Robot serial ports.
-robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=9600)#38400)
+robot_usb = None
 
 ### Set up videocapture.
-# cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
 ### Game Controller
 current_data = LogitechF310State()
@@ -48,17 +45,12 @@ num_skipped = 0
 SKIP_LIMIT = 5
 
 def video_process():
-    ret, frame = cap.read()
-
-    # Only use valid frames.
-    if ret:
-        data = frame.flatten()
-        data = data.tostring() #.encode()
-    else:
-        print('Invalid video frame')
+    while True:
+        ret, frame = cap.read()
+        UIServer.update_frame(frame)
 
 def recv_control():
-    global num_skipped
+    global num_skipped, robot_usb
 
     # Attempt to receive the control data.
     try:
@@ -95,10 +87,16 @@ def recv_control():
     # Convert to byte array for serial output.
     ctrl_string = (json.dumps(ctrl_dict) + "\n").encode()
 
-    print(ctrl_string)
-
-    # Publish to the robot.
-    robot_usb.write(ctrl_string)
+    # Publish commands to the robot.
+    try:
+        robot_usb.write(ctrl_string)
+    except Exception as e:
+        # If there is a serial error, just fail silently for now.
+        print(f'Serial FAIL: {e}')
+        # pass
+    else:
+        # If the data was written successfully, show the output
+        print(ctrl_string)
 
 def heartbeat():
     beat_str = "heartbeat".encode()
@@ -115,9 +113,6 @@ def main_loop():
         # Get control data.
         recv_control()
 
-        # Get video.
-        # video_process()
-
         # Send heartbeat back to control station.
         # heartbeat()
 
@@ -132,9 +127,29 @@ def main_loop():
         start_time = time.time()
 
 
+def initialize():
+    global robot_usb
+
+    try:
+        robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=9600)#38400)
+    except Exception as e:
+        print(f"Serial Error: {e}. Serial may be unavailable")
+
 if __name__=="__main__":
+    # Initialize devices
+    initialize()
+
     # Add time after start for the devices to initialize.
     time.sleep(1)
 
-    # Start looping.
-    main_loop()
+    # Main thread
+    main_thread = threading.Thread(target=main_loop)
+    main_thread.start()
+
+    # Video thread
+    video_thread = threading.Thread(target=video_process)
+    video_thread.start()
+
+    # Flask Thread
+    flask_thread = threading.Thread(target=UIServer.start)
+    flask_thread.start()
