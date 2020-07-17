@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+        <title>Robot</title>
+        <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@2.3.4/dist/vuetify.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/3.8.95/css/materialdesignicons.css">
+        <!-- <link rel="icon" href="./images/icons/icon-128x128.png"> -->
+        <!-- <link rel="manifest" href="./manifest.json"> -->
+
+        <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/moment@2.20.1/moment.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.js"></script>
+        <script src="https://unpkg.com/http-vue-loader"></script>
+        <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vuetify@2.3.4/dist/vuetify.min.js"></script>
+    </head>
+
+
+    <!-- Main UI -->
+    <body>
+        <div class="container body-content">
+            <div id="app" v-cloak>
+                <v-app>
+                    <robot-toolbar></robot-toolbar>
+                    <router-view></router-view>
+                </v-app>
+            </div>
+        </div>
+    </body>
+
+
+    <!-- Vue.js Templates -->
+    <!-- Toolbar -->
+    <template id='toolbar-template'>
+        <div>
+            <v-navigation-drawer dark app clipped temporary v-model="menu" class="green white--text">
+                <v-list >
+                    <v-list-item
+                    v-for="item in items" :key="item.title" @click="$router.push(item.path)">
+                        <v-list-item-action>
+                            <v-icon>{{ item.icon }}</v-icon>
+                        </v-list-item-action>
+
+                        <v-list-item-content>
+                            <v-list-item-title>{{ item.title }}</v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-navigation-drawer>
+            <v-app-bar dark color="green" class="mb-2" fixed app>
+                <v-layout align-center>
+                    <v-app-bar-nav-icon v-on:click="menu=!menu"></v-app-bar-nav-icon>
+                    <v-toolbar-title class="white--text">Robot Control Panel</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items></v-toolbar-items>
+                </v-layout>
+            </v-app-bar>
+            <div style="margin-bottom: 30px;"></div>
+        </div>
+    </template>
+
+    <template id='home-page'>
+        <div>
+            <h1>Robot POV</h1>
+            <img src="https://dsx.weather.com/util/image/map/airport_delays_1280x720.jpg"></img>
+        </div>
+    </template>
+    <!-- End Vue.js Templates -->
+
+
+    <!-- Vue.js Logic -->
+    <script>
+        Vue.config.productionTip = false
+
+        var robotToolbar =
+        Vue.component("robot-toolbar", {
+            template: '#toolbar-template',
+            data () {
+                return {
+                    menu: false,
+                    items: [
+                        { title: "Home", icon: "home", path: "/" },
+                    ]
+                }
+            },
+            mounted() { },
+            methods: { }
+        });
+
+        var home =
+        Vue.component("home", {
+            template: '#home-page',
+            data () {
+                return {}
+            },
+            mounted() { },
+            methods: { }
+        })
+
+        // Vue Router
+        Vue.use(VueRouter);
+
+        const routes = [
+            {
+                path: '/',
+                component: home
+            }
+        ]
+
+        let router = new VueRouter({
+            //mode: 'history',
+            routes // short for `routes: routes`
+        })
+
+        router.beforeEach((to, from, next) => {
+            next()
+        })
+
+
+        // APP
+        var app = new Vue({
+            vuetify : new Vuetify(),
+            el: '#app',
+            watch: {},
+            data: {
+                msg: 'Hello',
+                email: ''
+            },
+            components: {
+                home: home,
+                robotToolbar: robotToolbar
+            },
+            methods: {},
+            router
+        });
+    </script>
+
+</html>
