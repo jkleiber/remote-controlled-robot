@@ -84,6 +84,9 @@ def recv_control():
     ctrl_dict['power'] = power
     ctrl_dict['turn'] = turn
 
+    # Send control dictionary to server
+    UIServer.update_control_input(ctrl_dict)
+
     # Convert to byte array for serial output.
     ctrl_string = (json.dumps(ctrl_dict) + "\n").encode()
 
@@ -94,9 +97,6 @@ def recv_control():
         # If there is a serial error, just fail silently for now.
         # print(f'Serial FAIL: {e}')
         pass
-    else:
-        # If the data was written successfully, show the output
-        print(ctrl_string)
 
 def heartbeat():
     beat_str = "heartbeat".encode()

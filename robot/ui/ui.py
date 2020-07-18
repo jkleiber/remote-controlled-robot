@@ -27,12 +27,15 @@ socketio = SocketIO(app)
 frame = None
 jpg_buffer = None
 frame_available = False
+ctrl_status = {}
 
 def data_stream():
     status = {}
     # while True:
     # Encode status
     status['time'] = time.time()
+    for key, val in ctrl_status.items():
+        status[f'control.{key}'] = val
 
     # Send status to the frontend
     socketio.emit('newData', status)
@@ -80,3 +83,7 @@ def update_frame(new_frame):
     # Collect the frame and note availability
     frame = new_frame
     frame_available = True
+
+def update_control_input(ctrl_dict: dict):
+    global ctrl_status
+    ctrl_status = ctrl_dict

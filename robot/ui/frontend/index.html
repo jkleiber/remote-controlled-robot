@@ -95,7 +95,19 @@
 
     <template id='robot-status-template'>
         <div>
-            {{ status }}
+            <v-list >
+                <v-list-item
+                v-for="item in robot_status" :key="item.title">
+                    <v-list-item-action>
+                        <v-list-item-title>{{ item.name }}</v-list-item-title>
+                    </v-list-item-action>
+
+                    <v-list-item-content>
+                        <v-list-item-title>{{ item.value }}</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+            </v-list>
+            <!-- {{ status }} -->
         </div>
     </template>
     <!-- End Vue.js Templates -->
@@ -126,7 +138,8 @@
             template: "#robot-status-template",
             data () {
                 return {
-                    status: "n/a"
+                    status: "n/a",
+                    robot_status: []
                 }
             },
             created () {
@@ -136,6 +149,22 @@
             methods: {
                 fillStatus(data) {
                     this.status = data
+                    var tmp_robot_status = []
+                    // var status_obj = JSON.parse(data)
+
+                    for (var key in this.status) {
+                        var tmp_obj = {}
+
+                        // Get the data from the status object
+                        tmp_obj.name = key
+                        tmp_obj.value = this.status[key]
+
+                        // Add to the temporary status list
+                        tmp_robot_status.push(tmp_obj)
+                    }
+
+                    // Update robot status
+                    this.robot_status = tmp_robot_status
                 },
                 getRealTimeData () {
                     socket.on('newData', data => {
