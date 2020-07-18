@@ -8,22 +8,33 @@
         <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/vuetify@2.3.4/dist/vuetify.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/3.8.95/css/materialdesignicons.css">
+        <link rel="stylesheet" href="{% url_for('static',filename='css/site.css') %}">
         <!-- <link rel="icon" href="./images/icons/icon-128x128.png"> -->
         <!-- <link rel="manifest" href="./manifest.json"> -->
 
-        <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js"></script>
-        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/moment@2.20.1/moment.min.js"></script>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js"></script> -->
+        <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
+        <!-- <script src="https://unpkg.com/http-vue-loader"></script> -->
+        <!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.20.1/moment.min.js"></script> -->
+
+        <!-- Vue.js -->
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.js"></script>
-        <script src="https://unpkg.com/http-vue-loader"></script>
         <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vuetify@2.3.4/dist/vuetify.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue-material@1.0.0-beta-14/dist/vue-material.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue-socket.io@3.0.9/dist/vue-socketio.min.js"></script>
+
+        <!-- SocketIO -->
+        <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+            integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I="
+            crossorigin="anonymous">
+        </script>
     </head>
 
 
     <!-- Main UI -->
     <body>
-        <div class="container body-content">
+        <div class="app-container body-content">
             <div id="app" v-cloak>
                 <v-app>
                     <robot-toolbar></robot-toolbar>
@@ -34,6 +45,23 @@
     </body>
 
 
+    <!-- Socket IO -->
+    <script type="text/javascript" charset="utf-8">
+        var robotStatus = {};
+
+        var socket = io();
+        socket.on('connect', function() {
+            // socket.emit('my event', {data: 'I\'m connected!'});
+            console.log('Connected to Server!')
+        });
+
+        socket.on('newData', function(data) {
+            robotStatus = data
+            console.log(data)
+        });
+    </script>
+
+
     <!-- Vue.js Templates -->
     <!-- Toolbar -->
     <template id='toolbar-template'>
@@ -41,7 +69,7 @@
             <v-navigation-drawer dark app clipped temporary v-model="menu" class="green white--text">
                 <v-list >
                     <v-list-item
-                    v-for="item in items" :key="item.title" @click="$router.push(item.path)">
+                    v-for="item in items" :key="item.title" @click="$router.push(item.path).catch(()=>{});menu=false">
                         <v-list-item-action>
                             <v-icon>{{ item.icon }}</v-icon>
                         </v-list-item-action>
@@ -65,9 +93,16 @@
     </template>
 
     <template id='home-page'>
-        <div>
+        <div class="camera-view">
             <h1>Robot POV</h1>
-            <img src="https://dsx.weather.com/util/image/map/airport_delays_1280x720.jpg"></img>
+            <img src="{% url_for('video_stream') %}"></img>
+            <robot-status></robot-status>
+        </div>
+    </template>
+
+    <template id='robot-status-template'>
+        <div>
+            {{ status }}
         </div>
     </template>
     <!-- End Vue.js Templates -->
@@ -92,15 +127,40 @@
             methods: { }
         });
 
+
+        var statusComponent =
+        Vue.component("robot-status", {
+            template: "#robot-status-template",
+            props: {
+                status: robotStatus
+            },
+            // computed: {
+            //     getStatus: function () {
+            //         console.log(this.status)
+            //         return this.status;
+            //     }
+            // },
+            sockets: {
+                connect: function () {
+                    console.log('socket connected!')
+                },
+                newData: function (data) {
+                    console.log(data)
+                }
+            }
+        })
+
+
         var home =
         Vue.component("home", {
             template: '#home-page',
-            data () {
-                return {}
-            },
             mounted() { },
-            methods: { }
-        })
+            methods: { },
+            components: {
+                statusComponent: statusComponent
+            }
+        });
+
 
         // Vue Router
         Vue.use(VueRouter);
@@ -122,21 +182,33 @@
         })
 
 
+        Vue.use(VueMaterial);
+
+        Vue.use(new VueSocketIO({
+            debug: true,
+            connection: 'http://localhost:5000'
+        }));
+
         // APP
         var app = new Vue({
             vuetify : new Vuetify(),
             el: '#app',
             watch: {},
-            data: {
-                msg: 'Hello',
-                email: ''
-            },
             components: {
                 home: home,
-                robotToolbar: robotToolbar
+                robotToolbar: robotToolbar,
+                statusComponent: statusComponent
             },
-            methods: {},
-            router
+            data: {},
+            router,
+            sockets: {
+                connect: function () {
+                    console.log('socket connected!')
+                },
+                newData: function (data) {
+                    console.log(data)
+                }
+            }
         });
     </script>
 

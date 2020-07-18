@@ -1,14 +1,41 @@
 
 import cv2
+import json
+import threading
 import time
 
 from flask import Flask, render_template, Response
+from flask_socketio import SocketIO, emit
 
-app = Flask(__name__)
+class CustomFlask(Flask):
+    jinja_options = Flask.jinja_options.copy()
+    jinja_options.update(dict(
+        block_start_string='<%',
+        block_end_string='%>',
+        variable_start_string='{%',
+        variable_end_string='%}',
+        comment_start_string='<#',
+        comment_end_string='#>',
+    ))
 
+# App
+app = CustomFlask(__name__, template_folder='./frontend', static_folder='./frontend/static')
+app.config['SECRET_KEY'] = 'secret_password'
+socketio = SocketIO(app)
+
+# Data
 frame = None
 jpg_buffer = None
 frame_available = False
+
+def data_stream():
+    status = {}
+    # while True:
+    # Encode status
+    status['time'] = time.time()
+
+    # Send status to the frontend
+    socketio.emit('newData', status)
 
 def camera_feed():
     global frame, frame_available
@@ -25,6 +52,9 @@ def camera_feed():
             ".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
         # jpg_buffer = cv2.imencode('.jpg', frame)[1]
 
+        # Send data to frontend as well
+        data_stream()
+
         # If JPEG encode is successful, show image
         if jpg_buffer is not None:
             yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + jpg_buffer.tobytes() + b'\r\n')
@@ -40,6 +70,9 @@ def video_stream():
                 mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def start(ip='0.0.0.0', port=5000):
+    data_thread = threading.Thread(target=data_stream)
+    data_thread.start()
+
     app.run(host=ip, port=port, threaded=True)
 
 def update_frame(new_frame):

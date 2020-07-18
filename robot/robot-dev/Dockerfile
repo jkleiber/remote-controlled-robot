@@ -16,4 +16,7 @@ COPY Pipfile.lock Pipfile.lock
 RUN pipenv lock --requirements > requirements.txt
 RUN pip install -r requirements.txt
 
+# Additional PC-only requirements
+RUN pip install opencv-python
+
 CMD ["python", "-u", "main.py"]

@@ -92,8 +92,8 @@ def recv_control():
         robot_usb.write(ctrl_string)
     except Exception as e:
         # If there is a serial error, just fail silently for now.
-        print(f'Serial FAIL: {e}')
-        # pass
+        # print(f'Serial FAIL: {e}')
+        pass
     else:
         # If the data was written successfully, show the output
         print(ctrl_string)
