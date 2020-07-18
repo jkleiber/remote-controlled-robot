@@ -22,7 +22,7 @@
         <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vuetify@2.3.4/dist/vuetify.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue-material@1.0.0-beta-14/dist/vue-material.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/vue-socket.io@3.0.9/dist/vue-socketio.min.js"></script>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/vue-socket.io@3.0.9/dist/vue-socketio.min.js"></script> -->
 
         <!-- SocketIO -->
         <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
@@ -47,17 +47,10 @@
 
     <!-- Socket IO -->
     <script type="text/javascript" charset="utf-8">
-        var robotStatus = {};
-
         var socket = io();
         socket.on('connect', function() {
             // socket.emit('my event', {data: 'I\'m connected!'});
             console.log('Connected to Server!')
-        });
-
-        socket.on('newData', function(data) {
-            robotStatus = data
-            console.log(data)
         });
     </script>
 
@@ -131,21 +124,23 @@
         var statusComponent =
         Vue.component("robot-status", {
             template: "#robot-status-template",
-            props: {
-                status: robotStatus
+            data () {
+                return {
+                    status: "n/a"
+                }
             },
-            // computed: {
-            //     getStatus: function () {
-            //         console.log(this.status)
-            //         return this.status;
-            //     }
-            // },
-            sockets: {
-                connect: function () {
-                    console.log('socket connected!')
+            created () {
+                this.getRealTimeData(),
+                this.fillStatus()
+            },
+            methods: {
+                fillStatus(data) {
+                    this.status = data
                 },
-                newData: function (data) {
-                    console.log(data)
+                getRealTimeData () {
+                    socket.on('newData', data => {
+                        this.fillStatus(data)
+                    })
                 }
             }
         })
@@ -183,11 +178,6 @@
 
 
         Vue.use(VueMaterial);
-
-        Vue.use(new VueSocketIO({
-            debug: true,
-            connection: 'http://localhost:5000'
-        }));
 
         // APP
         var app = new Vue({
