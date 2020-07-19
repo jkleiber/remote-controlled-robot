@@ -86,28 +86,66 @@
     </template>
 
     <template id='home-page'>
-        <div class="camera-view">
-            <h1>Robot POV</h1>
+        <div class="dashboard">
+            <div class='main-view'>
+                <!-- Camera Feed -->
+                <camera-feed></camera-feed>
+                <robot-status></robot-status>
+                <!-- <error-log></error-log> -->
+            </div>
+        </div>
+    </template>
+
+    <template id="camera-template">
+        <div class='plugin'>
+            <h2>Robot POV</h2>
             <img src="{% url_for('video_stream') %}"></img>
-            <robot-status></robot-status>
+        </div>
+    </template>
+
+    <template id='data-page-template'>
+        <div class='dashboard'>
+            <div class='main-view'>
+                <robot-status></robot-status>
+            </div>
         </div>
     </template>
 
     <template id='robot-status-template'>
-        <div>
-            <v-list >
+        <div class='plugin'>
+            <h2>Live Data</h2>
+            <v-data-table
+                dense
+                :items="robot_status"
+                :headers="headers"
+                hide-default-footer
+                class="elevation-1">
+            </v-data-table>
+            <!-- <v-list >
                 <v-list-item
                 v-for="item in robot_status" :key="item.title">
-                    <v-list-item-action>
-                        <v-list-item-title>{{ item.name }}</v-list-item-title>
-                    </v-list-item-action>
+                    <v-list-item-content>
+                        <b><v-list-item-title>{{ item.name }}</v-list-item-title></b>
+                    </v-list-item-content>
 
                     <v-list-item-content>
                         <v-list-item-title>{{ item.value }}</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
-            </v-list>
-            <!-- {{ status }} -->
+            </v-list> -->
+        </div>
+    </template>
+
+    <template id='robot-error-log-template'>
+        <div>
+            <!-- <v-list >
+                <v-list-item
+                v-for="error in error_list">
+                    <v-list-item-content>
+                        {{ error }}
+                    </v-list-item-content>
+                </v-list-item>
+            </v-list> -->
         </div>
     </template>
     <!-- End Vue.js Templates -->
@@ -125,6 +163,7 @@
                     menu: false,
                     items: [
                         { title: "Home", icon: "home", path: "/" },
+                        { title: "Live Data", icon: "insert_chart", path: "/data" },
                     ]
                 }
             },
@@ -132,6 +171,10 @@
             methods: { }
         });
 
+        var cameraFeed =
+        Vue.component("camera-feed", {
+            template: "#camera-template"
+        })
 
         var statusComponent =
         Vue.component("robot-status", {
@@ -139,7 +182,11 @@
             data () {
                 return {
                     status: "n/a",
-                    robot_status: []
+                    robot_status: [],
+                    headers: [
+                        { text:"Name", value:"name" },
+                        { text: "Value", value:"value"},
+                    ]
                 }
             },
             created () {
@@ -174,6 +221,33 @@
             }
         })
 
+        var errorLog =
+        Vue.component('error-log', {
+            template: "#robot-error-log-template",
+            data () {
+                return {
+                    error: "",
+                    error_list: []
+                }
+            },
+            created () {
+                this.getErrors(),
+                this.addError()
+            },
+            methods: {
+                addError(data) {
+                    this.error = data
+                    // Update error log
+                    this.error_list.push(error)
+                },
+                getErrors () {
+                    socket.on('newError', data => {
+                        this.addError(data)
+                    })
+                }
+            }
+        })
+
 
         var home =
         Vue.component("home", {
@@ -181,9 +255,20 @@
             mounted() { },
             methods: { },
             components: {
+                errorLog: errorLog,
                 statusComponent: statusComponent
             }
         });
+
+        var dataPage =
+        Vue.component("data-page", {
+            template: "#data-page-template",
+            mounted() { },
+            methods: { },
+            components: {
+                statusComponent: statusComponent
+            }
+        })
 
 
         // Vue Router
@@ -193,6 +278,10 @@
             {
                 path: '/',
                 component: home
+            },
+            {
+                path: '/data',
+                component: dataPage
             }
         ]
 
@@ -214,6 +303,9 @@
             el: '#app',
             watch: {},
             components: {
+                cameraFeed: cameraFeed,
+                dataPage: dataPage,
+                errorLog: errorLog,
                 home: home,
                 robotToolbar: robotToolbar,
                 statusComponent: statusComponent

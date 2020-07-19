@@ -73,7 +73,19 @@ select {
     margin-left: 0;
 }
 
-.camera-view {
+.dashboard{
     margin-top: 30px;
     margin-left: 15px;
+}
+
+.main-view {
+    display: flex;
+    flex-direction: row;
+    /* justify-content: center; */
+    height: 100%;
+    width: 100%;
+}
+
+.plugin {
+    margin: 10px
 }
