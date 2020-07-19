@@ -6,7 +6,7 @@ docker stop ${DOCKER_CONTAINER}
 docker rm ${DOCKER_CONTAINER}
 
 # Copy the common files to this directory.
-cp -r ../common ./common
+cp -r ../common ./
 
 # Run the VPN.
 sudo wg-quick up wg0
