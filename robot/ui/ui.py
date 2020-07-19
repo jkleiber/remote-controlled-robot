@@ -29,9 +29,12 @@ jpg_buffer = None
 frame_available = False
 ctrl_status = {}
 
+# Errors
+error_queue = []
+
 def data_stream():
     status = {}
-    # while True:
+
     # Encode status
     status['time'] = time.time()
     for key, val in ctrl_status.items():
@@ -39,6 +42,15 @@ def data_stream():
 
     # Send status to the frontend
     socketio.emit('newData', status)
+
+def publish_errors():
+    global error_queue
+
+    error_pkt = {}
+    num_errors = len(error_queue)
+    for _ in range(num_errors):
+        error_pkt['msg'] = error_queue.pop(0)
+        socketio.emit('newError', error_pkt)
 
 def camera_feed():
     global frame, frame_available
@@ -57,6 +69,9 @@ def camera_feed():
 
         # Send data to frontend as well
         data_stream()
+
+        # Send errors to frontend
+        publish_errors()
 
         # If JPEG encode is successful, show image
         if jpg_buffer is not None:
@@ -87,3 +102,7 @@ def update_frame(new_frame):
 def update_control_input(ctrl_dict: dict):
     global ctrl_status
     ctrl_status = ctrl_dict
+
+def new_error(err_str: str):
+    global error_queue
+    error_queue.append(err_str)

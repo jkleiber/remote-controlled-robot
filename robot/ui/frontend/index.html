@@ -85,13 +85,13 @@
         </div>
     </template>
 
-    <template id='home-page'>
+    <template id='home-page-template'>
         <div class="dashboard">
             <div class='main-view'>
                 <!-- Camera Feed -->
                 <camera-feed></camera-feed>
                 <robot-status></robot-status>
-                <!-- <error-log></error-log> -->
+                <error-log></error-log>
             </div>
         </div>
     </template>
@@ -111,6 +111,14 @@
         </div>
     </template>
 
+    <template id='error-page-template'>
+        <div class='dashboard'>
+            <div class='main-view'>
+                <error-log></error-log>
+            </div>
+        </div>
+    </template>
+
     <template id='robot-status-template'>
         <div class='plugin'>
             <h2>Live Data</h2>
@@ -118,34 +126,26 @@
                 dense
                 :items="robot_status"
                 :headers="headers"
+                :items-per-page="-1"
                 hide-default-footer
                 class="elevation-1">
             </v-data-table>
-            <!-- <v-list >
-                <v-list-item
-                v-for="item in robot_status" :key="item.title">
-                    <v-list-item-content>
-                        <b><v-list-item-title>{{ item.name }}</v-list-item-title></b>
-                    </v-list-item-content>
-
-                    <v-list-item-content>
-                        <v-list-item-title>{{ item.value }}</v-list-item-title>
-                    </v-list-item-content>
-                </v-list-item>
-            </v-list> -->
         </div>
     </template>
 
     <template id='robot-error-log-template'>
         <div>
-            <!-- <v-list >
-                <v-list-item
-                v-for="error in error_list">
-                    <v-list-item-content>
-                        {{ error }}
-                    </v-list-item-content>
-                </v-list-item>
-            </v-list> -->
+            <div class='plugin'>
+                <h2>Error Log</h2>
+                <v-data-table
+                    dense
+                    :items="error_list"
+                    :headers="headers"
+                    :items-per-page="10"
+                    hide-default-footer
+                    class="elevation-1">
+                </v-data-table>
+            </div>
         </div>
     </template>
     <!-- End Vue.js Templates -->
@@ -164,6 +164,7 @@
                     items: [
                         { title: "Home", icon: "home", path: "/" },
                         { title: "Live Data", icon: "insert_chart", path: "/data" },
+                        { title: "Error Log", icon: "bug_report", path: "/errors" },
                     ]
                 }
             },
@@ -181,7 +182,6 @@
             template: "#robot-status-template",
             data () {
                 return {
-                    status: "n/a",
                     robot_status: [],
                     headers: [
                         { text:"Name", value:"name" },
@@ -195,16 +195,23 @@
             },
             methods: {
                 fillStatus(data) {
-                    this.status = data
+                    var status = data
                     var tmp_robot_status = []
                     // var status_obj = JSON.parse(data)
 
-                    for (var key in this.status) {
+                    for (var key in status) {
                         var tmp_obj = {}
 
                         // Get the data from the status object
                         tmp_obj.name = key
-                        tmp_obj.value = this.status[key]
+
+                        var value = status[key]
+                        if (typeof value === "number") {
+                            tmp_obj.value = value.toFixed(5)
+                        }
+                        else {
+                            tmp_obj.value = value
+                        }
 
                         // Add to the temporary status list
                         tmp_robot_status.push(tmp_obj)
@@ -226,8 +233,12 @@
             template: "#robot-error-log-template",
             data () {
                 return {
-                    error: "",
-                    error_list: []
+                    error_list: [],
+                    error_id: 0,
+                    headers: [
+                        { text: "ID", value: "id" },
+                        { text: "Message", value: "msg" }
+                    ]
                 }
             },
             created () {
@@ -236,9 +247,17 @@
             },
             methods: {
                 addError(data) {
-                    this.error = data
-                    // Update error log
-                    this.error_list.push(error)
+                    // Get data from server
+                    var error = data
+
+                    if (typeof error !== 'undefined') {
+                        // Update error id
+                        error.id = this.error_id
+                        this.error_id += 1
+
+                        // Update error log
+                        this.error_list.unshift(error)
+                    }
                 },
                 getErrors () {
                     socket.on('newError', data => {
@@ -249,9 +268,9 @@
         })
 
 
-        var home =
-        Vue.component("home", {
-            template: '#home-page',
+        var homePage =
+        Vue.component("home-page", {
+            template: '#home-page-template',
             mounted() { },
             methods: { },
             components: {
@@ -270,6 +289,16 @@
             }
         })
 
+        var errorPage =
+        Vue.component("error-page", {
+            template: "#error-page-template",
+            mounted() { },
+            methods: { },
+            components: {
+                errorLog: errorLog
+            }
+        })
+
 
         // Vue Router
         Vue.use(VueRouter);
@@ -277,11 +306,15 @@
         const routes = [
             {
                 path: '/',
-                component: home
+                component: homePage
             },
             {
                 path: '/data',
                 component: dataPage
+            },
+            {
+                path: '/errors',
+                component: errorPage
             }
         ]
 
@@ -306,7 +339,7 @@
                 cameraFeed: cameraFeed,
                 dataPage: dataPage,
                 errorLog: errorLog,
-                home: home,
+                homePage: homePage,
                 robotToolbar: robotToolbar,
                 statusComponent: statusComponent
             },

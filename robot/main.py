@@ -95,8 +95,9 @@ def recv_control():
         robot_usb.write(ctrl_string)
     except Exception as e:
         # If there is a serial error, just fail silently for now.
-        # print(f'Serial FAIL: {e}')
-        pass
+        # print()
+        serial_err = f'Serial FAIL: {e}'
+        UIServer.new_error(serial_err)
 
 def heartbeat():
     beat_str = "heartbeat".encode()
@@ -133,7 +134,7 @@ def initialize():
     try:
         robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=9600)#38400)
     except Exception as e:
-        print(f"Serial Error: {e}. Serial may be unavailable")
+        UIServer.new_error("Serial Error: {e}. Serial may be unavailable")
 
 if __name__=="__main__":
     # Initialize devices
