@@ -88,9 +88,6 @@ def video_stream():
                 mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def start(ip='0.0.0.0', port=5000):
-    data_thread = threading.Thread(target=data_stream)
-    data_thread.start()
-
     app.run(host=ip, port=port, threaded=True)
 
 def update_frame(new_frame):
