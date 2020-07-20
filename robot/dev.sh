@@ -1,18 +1,11 @@
+# Developer specific script
+
 DOCKER_BASE_IMG="robot-image"
 CONTAINER_NAME="robot-container"
 
-# Get the build mode for the image
-BUILD_MODE="$1"
-
 # Default build directory
-BUILD_DIR="robot-base/"
-BUILD_TAG="latest"
-
-# Developer mode
-if [ "$BUILD_MODE" = "dev" ]; then
-    BUILD_DIR="robot-dev/"
-    BUILD_TAG="dev"
-fi
+BUILD_DIR="robot-dev/"
+BUILD_TAG="dev"
 
 # Docker image and tag
 DOCKER_IMG="${DOCKER_BASE_IMG}:${BUILD_TAG}"
@@ -28,10 +21,7 @@ docker stop ${CONTAINER_NAME}
 docker rm ${CONTAINER_NAME}
 
 # Copy the common files to this directory.
-cp -r ../common ./common
-
-# Run the VPN.
-sudo wg-quick up wg0
+cp -r ../common ./
 
 # Run the image inside the specified container
 docker run \
@@ -44,6 +34,3 @@ docker run \
     --net=host \
     --name ${CONTAINER_NAME} \
     "${DOCKER_IMG}"
-
-# Stop the VPN.
-sudo wg-quick down wg0
