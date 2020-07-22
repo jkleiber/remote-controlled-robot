@@ -1,10 +1,10 @@
 # Developer specific script
 
-DOCKER_BASE_IMG="robot-image"
-CONTAINER_NAME="robot-container"
+DOCKER_BASE_IMG="robot-image-ros"
+CONTAINER_NAME="robot-container-ros"
 
 # Default build directory
-BUILD_DIR="robot-dev/"
+BUILD_DIR="robot-ros-dev/"
 BUILD_TAG="dev"
 
 # Docker image and tag
@@ -25,12 +25,12 @@ cp -r ../common ./
 
 # Run the image inside the specified container
 docker run \
+    -d \
     -v /dev:/dev \
-    -v $(pwd):/app \
-    -p 5000:5000 \
-    -p 5001:5001 \
-    -p 5002:5002 \
+    -v $(pwd):/robot \
     --privileged \
     --net=host \
     --name ${CONTAINER_NAME} \
     "${DOCKER_IMG}"
+
+echo "Docker container started!"

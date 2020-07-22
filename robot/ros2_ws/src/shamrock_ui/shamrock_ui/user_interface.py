@@ -1,4 +1,3 @@
-
 import cv2
 import json
 import threading
@@ -103,3 +102,12 @@ def update_control_input(ctrl_dict: dict):
 def new_error(err_str: str):
     global error_queue
     error_queue.append(err_str)
+
+def main():
+    print('Hi from shamrock_ui.')
+
+    web_thread = threading.Thread(target=start).start()
+
+
+if __name__ == '__main__':
+    main()

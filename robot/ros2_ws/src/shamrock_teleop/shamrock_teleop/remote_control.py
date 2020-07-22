@@ -18,18 +18,12 @@ robot_ip = "0.0.0.0"
 control_ip = "10.0.0.2"
 control_port = 5001
 control_conn = (robot_ip, control_port)
-heart_port = 5002
-heart_conn = (control_ip, heart_port)
 
 ### Set up UDP sockets.
 # Control.
 ctrl_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 ctrl_sock.bind(control_conn)
 ctrl_sock.setblocking(False)
-
-# Heartbeat
-heart_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-heart_sock.setblocking(True)
 
 ### Robot serial ports.
 robot_usb = None
@@ -43,11 +37,6 @@ current_data = LogitechF310State()
 # Skipped messages tracker
 num_skipped = 0
 SKIP_LIMIT = 5
-
-def video_process():
-    while True:
-        ret, frame = cap.read()
-        UIServer.update_frame(frame)
 
 def recv_control():
     global num_skipped, robot_usb
@@ -99,58 +88,17 @@ def recv_control():
         serial_err = f'Serial FAIL: {e}'
         UIServer.new_error(serial_err)
 
-def heartbeat():
-    beat_str = "heartbeat".encode()
-    try:
-        heart_sock.sendto(beat_str, heart_conn)
-    except Exception as e:
-        print("Heartbeat Error: " + str(e))
 
-def main_loop():
-    # Limit the loop rate for control
-    # TODO: do something better than this (i.e. multiprocess)
-    start_time = 0
+def main():
+    print('Hi from shamrock_teleop.')
+
     while True:
         # Get control data.
         recv_control()
 
-        # Send heartbeat back to control station.
-        # heartbeat()
-
-        # Slow down the loop
-        # Sleep until the period is up.
-        # while (time.time() - start_time) < LOOP_PERIOD:
-            # continue
-
+        # Limit how fast the loop runs
         time.sleep(LOOP_PERIOD)
 
-        # Set the start time for the next loop
-        start_time = time.time()
 
-
-def initialize():
-    global robot_usb
-
-    try:
-        robot_usb = serial.Serial(port='/dev/ttyUSB0', baudrate=9600)#38400)
-    except Exception as e:
-        UIServer.new_error("Serial Error: {e}. Serial may be unavailable")
-
-if __name__=="__main__":
-    # Initialize devices
-    initialize()
-
-    # Add time after start for the devices to initialize.
-    time.sleep(1)
-
-    # Main thread
-    main_thread = threading.Thread(target=main_loop)
-    main_thread.start()
-
-    # Video thread
-    video_thread = threading.Thread(target=video_process)
-    video_thread.start()
-
-    # Flask Thread
-    flask_thread = threading.Thread(target=UIServer.start)
-    flask_thread.start()
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,3 @@
+[submodule "robot/ros2_ws/src/ydlidar_ros2"]
+	path = robot/ros2_ws/src/ydlidar_ros2
+	url = https://github.com/yangfuyuan/ydlidar_ros2.git
