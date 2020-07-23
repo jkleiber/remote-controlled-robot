@@ -10,7 +10,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from flask import Flask, render_template, Response
 from flask_socketio import SocketIO, emit
 from geometry_msgs.msg import Twist
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, PointCloud
 from std_msgs.msg import String
 
 class CustomFlask(Flask):
@@ -41,6 +41,9 @@ ctrl_status = {
     'turn': 0.0
     }
 
+# LiDAR
+obstacle_points = []
+
 # Errors
 error_queue = []
 
@@ -51,6 +54,8 @@ def data_stream():
     status['time'] = time.time()
     for key, val in ctrl_status.items():
         status[f'control.{key}'] = val
+
+    status['points'] = str(obstacle_points)
 
     # Send status to the frontend
     socketio.emit('newData', status)
@@ -113,6 +118,18 @@ def update_control_input(ctrl: Twist):
     ctrl_status['power'] = ctrl.linear.x
     ctrl_status['turn'] = ctrl.angular.z
 
+def update_lidar(point_cloud: PointCloud):
+    global obstacle_points
+
+    tmp_obstacle_points = []
+
+    # Update the obstacle points locally first
+    for pt in point_cloud.points:
+        pt_tuple = (pt.x, pt.y)
+        tmp_obstacle_points.append(pt_tuple)
+
+    obstacle_points = tmp_obstacle_points
+
 def new_error(error: String):
     global error_queue
     error_queue.append(error.data)
@@ -125,6 +142,7 @@ def ros_loop():
 
     # Data feed updates
     control_input_sub = rospy.Subscriber("/control", Twist, update_control_input, queue_size=1)
+    lidar_readings_sub = rospy.Subscriber("/point_cloud", PointCloud, update_lidar, queue_size=1)
 
     # Error feed updates
     error_sub = rospy.Subscriber("/error", String, new_error, queue_size=10)
@@ -132,9 +150,6 @@ def ros_loop():
     rospy.spin()
 
 if __name__ == "__main__":
-    # Start ROS
-    # ros_thread = threading.Thread(target = ros_loop).start()
-
     # Flask Thread
     web_thread = threading.Thread(target = start, daemon = True).start()
 
