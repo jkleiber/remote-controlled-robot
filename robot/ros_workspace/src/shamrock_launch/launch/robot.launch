@@ -7,5 +7,6 @@
 
     <!-- OpenCV / Vision -->
     <node pkg="shamrock_vision" name="vision_node" type="vision_node.py" output="screen" />
+    <node pkg="shamrock_vision" name="lidar_node" type="lidar_node.py" output="screen" />
     <include file="$(find shamrock_vision)/launch/lidar.launch" />
 </launch>

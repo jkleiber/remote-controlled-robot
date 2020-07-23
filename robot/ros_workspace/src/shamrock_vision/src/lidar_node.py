@@ -2,6 +2,8 @@
 
 import rospy
 
+from math import cos, sin
+
 from geometry_msgs.msg import Point32
 from sensor_msgs.msg import LaserScan, PointCloud
 
@@ -15,14 +17,14 @@ def lidar_callback(scan_msg):
 
     # Run through all the angles
     while angle < scan_msg.angle_max:
-        dist = ranges[idx]
+        dist = scan_msg.ranges[idx]
 
         # Only consider real readings
         if dist >= scan_msg.range_min and dist <= scan_msg.range_max:
             x = dist * cos(angle)
             y = dist * sin(angle)
             point = Point32(x = x, y = y, z = 0)
-            tmp_point_cloud.points.append(point)
+            point_cloud.points.append(point)
 
         # Update angle and index
         angle += scan_msg.angle_increment
