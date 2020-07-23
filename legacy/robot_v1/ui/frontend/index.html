@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+        <title>Robot</title>
+        <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@2.3.4/dist/vuetify.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/3.8.95/css/materialdesignicons.css">
+        <link rel="stylesheet" href="{% url_for('static',filename='css/site.css') %}">
+        <!-- <link rel="icon" href="./images/icons/icon-128x128.png"> -->
+        <!-- <link rel="manifest" href="./manifest.json"> -->
+
+        <!-- <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js"></script> -->
+        <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
+        <!-- <script src="https://unpkg.com/http-vue-loader"></script> -->
+        <!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.20.1/moment.min.js"></script> -->
+
+        <!-- Vue.js -->
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.js"></script>
+        <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vuetify@2.3.4/dist/vuetify.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue-material@1.0.0-beta-14/dist/vue-material.min.js"></script>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/vue-socket.io@3.0.9/dist/vue-socketio.min.js"></script> -->
+
+        <!-- SocketIO -->
+        <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+            integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I="
+            crossorigin="anonymous">
+        </script>
+    </head>
+
+
+    <!-- Main UI -->
+    <body>
+        <div class="app-container body-content">
+            <div id="app" v-cloak>
+                <v-app>
+                    <robot-toolbar></robot-toolbar>
+                    <router-view></router-view>
+                </v-app>
+            </div>
+        </div>
+    </body>
+
+
+    <!-- Socket IO -->
+    <script type="text/javascript" charset="utf-8">
+        var socket = io();
+        socket.on('connect', function() {
+            // socket.emit('my event', {data: 'I\'m connected!'});
+            console.log('Connected to Server!')
+        });
+    </script>
+
+
+    <!-- Vue.js Templates -->
+    <!-- Toolbar -->
+    <template id='toolbar-template'>
+        <div>
+            <v-navigation-drawer dark app clipped temporary v-model="menu" class="green white--text">
+                <v-list >
+                    <v-list-item
+                    v-for="item in items" :key="item.title" @click="$router.push(item.path).catch(()=>{});menu=false">
+                        <v-list-item-action>
+                            <v-icon>{{ item.icon }}</v-icon>
+                        </v-list-item-action>
+
+                        <v-list-item-content>
+                            <v-list-item-title>{{ item.title }}</v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-navigation-drawer>
+            <v-app-bar dark color="green" class="mb-2" fixed app>
+                <v-layout align-center>
+                    <v-app-bar-nav-icon v-on:click="menu=!menu"></v-app-bar-nav-icon>
+                    <v-toolbar-title class="white--text">Robot Control Panel</v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-toolbar-items></v-toolbar-items>
+                </v-layout>
+            </v-app-bar>
+            <div style="margin-bottom: 30px;"></div>
+        </div>
+    </template>
+
+    <template id='home-page-template'>
+        <div class="dashboard">
+            <div class='main-view'>
+                <!-- Camera Feed -->
+                <camera-feed></camera-feed>
+                <robot-status></robot-status>
+                <error-log></error-log>
+            </div>
+        </div>
+    </template>
+
+    <template id="camera-template">
+        <div class='plugin'>
+            <h2>Robot POV</h2>
+            <img src="{% url_for('video_stream') %}"></img>
+        </div>
+    </template>
+
+    <template id='data-page-template'>
+        <div class='dashboard'>
+            <div class='main-view'>
+                <robot-status></robot-status>
+            </div>
+        </div>
+    </template>
+
+    <template id='error-page-template'>
+        <div class='dashboard'>
+            <div class='main-view'>
+                <error-log></error-log>
+            </div>
+        </div>
+    </template>
+
+    <template id='robot-status-template'>
+        <div class='plugin'>
+            <h2>Live Data</h2>
+            <v-data-table
+                dense
+                :items="robot_status"
+                :headers="headers"
+                :items-per-page="-1"
+                hide-default-footer
+                class="elevation-1">
+            </v-data-table>
+        </div>
+    </template>
+
+    <template id='robot-error-log-template'>
+        <div>
+            <div class='plugin'>
+                <h2>Error Log</h2>
+                <v-data-table
+                    dense
+                    :items="error_list"
+                    :headers="headers"
+                    :items-per-page="10"
+                    hide-default-footer
+                    class="elevation-1">
+                </v-data-table>
+            </div>
+        </div>
+    </template>
+    <!-- End Vue.js Templates -->
+
+
+    <!-- Vue.js Logic -->
+    <script>
+        Vue.config.productionTip = false
+
+        var robotToolbar =
+        Vue.component("robot-toolbar", {
+            template: '#toolbar-template',
+            data () {
+                return {
+                    menu: false,
+                    items: [
+                        { title: "Home", icon: "home", path: "/" },
+                        { title: "Live Data", icon: "insert_chart", path: "/data" },
+                        { title: "Error Log", icon: "bug_report", path: "/errors" },
+                    ]
+                }
+            },
+            mounted() { },
+            methods: { }
+        });
+
+        var cameraFeed =
+        Vue.component("camera-feed", {
+            template: "#camera-template"
+        })
+
+        var statusComponent =
+        Vue.component("robot-status", {
+            template: "#robot-status-template",
+            data () {
+                return {
+                    robot_status: [],
+                    headers: [
+                        { text:"Name", value:"name" },
+                        { text: "Value", value:"value"},
+                    ]
+                }
+            },
+            created () {
+                this.getRealTimeData(),
+                this.fillStatus()
+            },
+            methods: {
+                fillStatus(data) {
+                    var status = data
+                    var tmp_robot_status = []
+                    // var status_obj = JSON.parse(data)
+
+                    for (var key in status) {
+                        var tmp_obj = {}
+
+                        // Get the data from the status object
+                        tmp_obj.name = key
+
+                        var value = status[key]
+                        if (typeof value === "number") {
+                            tmp_obj.value = value.toFixed(5)
+                        }
+                        else {
+                            tmp_obj.value = value
+                        }
+
+                        // Add to the temporary status list
+                        tmp_robot_status.push(tmp_obj)
+                    }
+
+                    // Update robot status
+                    this.robot_status = tmp_robot_status
+                },
+                getRealTimeData () {
+                    socket.on('newData', data => {
+                        this.fillStatus(data)
+                    })
+                }
+            }
+        })
+
+        var errorLog =
+        Vue.component('error-log', {
+            template: "#robot-error-log-template",
+            data () {
+                return {
+                    error_list: [],
+                    error_id: 0,
+                    headers: [
+                        { text: "ID", value: "id" },
+                        { text: "Message", value: "msg" }
+                    ]
+                }
+            },
+            created () {
+                this.getErrors(),
+                this.addError()
+            },
+            methods: {
+                addError(data) {
+                    // Get data from server
+                    var error = data
+
+                    if (typeof error !== 'undefined') {
+                        // Update error id
+                        error.id = this.error_id
+                        this.error_id += 1
+
+                        // Update error log
+                        this.error_list.unshift(error)
+                    }
+                },
+                getErrors () {
+                    socket.on('newError', data => {
+                        this.addError(data)
+                    })
+                }
+            }
+        })
+
+
+        var homePage =
+        Vue.component("home-page", {
+            template: '#home-page-template',
+            mounted() { },
+            methods: { },
+            components: {
+                errorLog: errorLog,
+                statusComponent: statusComponent
+            }
+        });
+
+        var dataPage =
+        Vue.component("data-page", {
+            template: "#data-page-template",
+            mounted() { },
+            methods: { },
+            components: {
+                statusComponent: statusComponent
+            }
+        })
+
+        var errorPage =
+        Vue.component("error-page", {
+            template: "#error-page-template",
+            mounted() { },
+            methods: { },
+            components: {
+                errorLog: errorLog
+            }
+        })
+
+
+        // Vue Router
+        Vue.use(VueRouter);
+
+        const routes = [
+            {
+                path: '/',
+                component: homePage
+            },
+            {
+                path: '/data',
+                component: dataPage
+            },
+            {
+                path: '/errors',
+                component: errorPage
+            }
+        ]
+
+        let router = new VueRouter({
+            //mode: 'history',
+            routes // short for `routes: routes`
+        })
+
+        router.beforeEach((to, from, next) => {
+            next()
+        })
+
+
+        Vue.use(VueMaterial);
+
+        // APP
+        var app = new Vue({
+            vuetify : new Vuetify(),
+            el: '#app',
+            watch: {},
+            components: {
+                cameraFeed: cameraFeed,
+                dataPage: dataPage,
+                errorLog: errorLog,
+                homePage: homePage,
+                robotToolbar: robotToolbar,
+                statusComponent: statusComponent
+            },
+            data: {},
+            router,
+            sockets: {
+                connect: function () {
+                    console.log('socket connected!')
+                },
+                newData: function (data) {
+                    console.log(data)
+                }
+            }
+        });
+    </script>
+
+</html>

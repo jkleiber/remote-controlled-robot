@@ -1,19 +1,11 @@
-#!/bin/bash
+# Developer specific script
 
-source docker_config.sh
-
-# Get the build mode for the image
-BUILD_MODE="$1"
+DOCKER_BASE_IMG="robot-image"
+CONTAINER_NAME="robot-container"
 
 # Default build directory
-BUILD_DIR="robot-base/"
-BUILD_TAG="latest"
-
-# Developer mode
-if [ "$BUILD_MODE" = "dev" ]; then
-    BUILD_DIR="robot-dev/"
-    BUILD_TAG="dev"
-fi
+BUILD_DIR="robot-dev/"
+BUILD_TAG="dev"
 
 # Docker image and tag
 DOCKER_IMG="${DOCKER_BASE_IMG}:${BUILD_TAG}"
@@ -28,9 +20,11 @@ docker build $BUILD_DIR -t ${DOCKER_IMG}
 docker stop ${CONTAINER_NAME}
 docker rm ${CONTAINER_NAME}
 
+# Copy the common files to this directory.
+cp -r ../common ./
+
 # Run the image inside the specified container
 docker run \
-    -d \
     -v /dev:/dev \
     -v $(pwd):/app \
     -p 5000:5000 \

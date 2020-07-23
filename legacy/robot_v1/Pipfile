@@ -11,3 +11,5 @@ numpy = "*"
 flask = "*"
 flask-socketio = "*"
 
+[requires]
+python_version = "3.8"

@@ -1,0 +1,11 @@
+{
+  "name": "Robot Control Panel",
+  "short_name": "Robot",
+  "theme_color": "#2196f3",
+  "background_color": "#2196f3",
+  "display": "standalone",
+  "Scope": "/",
+  "start_url": "/",
+  "icons": [],
+  "splash_pages": null
+}
