@@ -1,6 +1,6 @@
-FROM jkleiber8/opencv-python-embedded:base-4.3.0
+FROM ros:noetic-perception-focal
 
-WORKDIR /app
+WORKDIR /workspace
 
 EXPOSE 5001/udp
 EXPOSE 5002/udp

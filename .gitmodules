@@ -1,0 +1,6 @@
+[submodule "robot/ros_workspace/src/vision_opencv"]
+	path = robot/ros_workspace/src/vision_opencv
+	url = git@github.com:ros-perception/vision_opencv.git
+[submodule "robot/ros_workspace/src/ydlidar"]
+	path = robot/ros_workspace/src/ydlidar
+	url = git@github.com:EAIBOT/ydlidar.git
