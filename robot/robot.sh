@@ -1,5 +1,6 @@
-DOCKER_BASE_IMG="robot-image"
-CONTAINER_NAME="robot-container"
+#!/bin/bash
+
+source docker_config.sh
 
 # Get the build mode for the image
 BUILD_MODE="$1"
@@ -27,12 +28,6 @@ docker build $BUILD_DIR -t ${DOCKER_IMG}
 docker stop ${CONTAINER_NAME}
 docker rm ${CONTAINER_NAME}
 
-# Copy the common files to this directory.
-cp -r ../common ./
-
-# Run the VPN.
-sudo wg-quick up wg0
-
 # Run the image inside the specified container
 docker run \
     -d \
@@ -45,6 +40,3 @@ docker run \
     --net=host \
     --name ${CONTAINER_NAME} \
     "${DOCKER_IMG}"
-
-# Stop the VPN.
-sudo wg-quick down wg0
