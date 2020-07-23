@@ -1,7 +1,6 @@
 # Developer specific script
 
-DOCKER_BASE_IMG="robot-image-ros"
-CONTAINER_NAME="robot-container-ros"
+source docker_config.sh
 
 # Default build directory
 BUILD_DIR="robot-dev/"

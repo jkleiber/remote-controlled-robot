@@ -99,7 +99,7 @@ def video_stream():
     return Response(camera_feed(),
                 mimetype='multipart/x-mixed-replace; boundary=frame')
 
-def start(ip='localhost', port=5000):
+def start(ip='0.0.0.0', port=5000):
     app.run(host=ip, port=port, threaded=True)
 
 def update_frame(new_frame: Image):

@@ -35,6 +35,7 @@ sudo wg-quick up wg0
 
 # Run the image inside the specified container
 docker run \
+    -d \
     -v /dev:/dev \
     -v $(pwd):/app \
     -p 5000:5000 \
