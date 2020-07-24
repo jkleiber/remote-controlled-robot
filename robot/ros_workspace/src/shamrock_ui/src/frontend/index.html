@@ -9,13 +9,19 @@
         <link href="https://cdn.jsdelivr.net/npm/vuetify@2.3.4/dist/vuetify.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/3.8.95/css/materialdesignicons.css">
         <link rel="stylesheet" href="{% url_for('static',filename='css/site.css') %}">
-        <!-- <link rel="icon" href="./images/icons/icon-128x128.png"> -->
+        <link rel="icon" href="{% url_for('static',filename='img/robot.png') %}">
         <!-- <link rel="manifest" href="./manifest.json"> -->
 
         <!-- <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js"></script> -->
         <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
         <!-- <script src="https://unpkg.com/http-vue-loader"></script> -->
         <!-- <script src="https://cdn.jsdelivr.net/npm/moment@2.20.1/moment.min.js"></script> -->
+
+        <!-- SocketIO -->
+        <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+            integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I="
+            crossorigin="anonymous">
+        </script>
 
         <!-- Vue.js -->
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.js"></script>
@@ -24,11 +30,15 @@
         <script src="https://cdn.jsdelivr.net/npm/vue-material@1.0.0-beta-14/dist/vue-material.min.js"></script>
         <!-- <script src="https://cdn.jsdelivr.net/npm/vue-socket.io@3.0.9/dist/vue-socketio.min.js"></script> -->
 
-        <!-- SocketIO -->
-        <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
-            integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I="
-            crossorigin="anonymous">
-        </script>
+        <!-- Vue Charts -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"
+                integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg=="
+                crossorigin="anonymous"></script> -->
+        <!-- <script src="https://cdn.jsdelivr.net/npm/plotly@1.0.6/index.min.js"></script> -->
+        <!-- <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script> -->
+
+
     </head>
 
 
@@ -91,7 +101,8 @@
                 <!-- Camera Feed -->
                 <camera-feed></camera-feed>
                 <robot-status></robot-status>
-                <error-log></error-log>
+                <lidar-stream></lidar-stream>
+                <!-- <error-log></error-log> -->
             </div>
         </div>
     </template>
@@ -145,6 +156,17 @@
                     hide-default-footer
                     class="elevation-1">
                 </v-data-table>
+            </div>
+        </div>
+    </template>
+
+    <template id='lidar-stream-template'>
+        <div>
+            <div class='plugin'>
+                <h2>LiDAR Feed</h2>
+                <!-- <Plotly :data="chartData"></Plotly> -->
+                <!-- <vue-plotly :data="chartData"></vue-plotly> -->
+                <canvas id="lidarChart" width="400" height="400"></canvas>
             </div>
         </div>
     </template>
@@ -267,6 +289,101 @@
             }
         })
 
+        var lidarStream =
+        Vue.component('lidar-stream', {
+            template: "#lidar-stream-template",
+            components: {},
+            data () {
+                return {
+                    chartData: {
+                        x: [0],
+                        y: [0],
+                        name: 'lidar',
+                        mode: 'scatter'
+                    },
+                    ctx: null,
+                    chart: null
+                }
+            },
+            mounted () {
+                this.createChart(),
+                this.updateLidar(),
+                this.getLidarData()
+            },
+            methods: {
+                createChart () {
+                    this.ctx = document.getElementById('lidarChart')
+                    this.chart = new Chart(this.ctx, {
+                        type: 'scatter',
+                        data: {
+                            datasets: [
+                                {
+                                    label: "LiDAR Data",
+                                    data: [],
+                                    borderColor: 'Black',
+                                    borderWidth: 2,
+                                    pointBackgroundColor: 'Black'
+                                },
+                                {
+                                    label: "Robot",
+                                    data: [,
+                                        {
+                                            x: 0,
+                                            y: 0
+                                        },
+                                    ],
+                                    borderColor: 'Green',
+                                    borderWidth: 2,
+                                    pointBackgroundColor: 'Green',
+                                    pointStyle: 'triangle',
+                                    radius: 10
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            events: [],  // this makes it so the hover tooltip doesn't appear
+                            legend: {
+                                usePointStyle: true
+                            },
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        max: 10,
+                                        min: -10,
+                                        stepSize: 1
+                                    }
+                                }],
+                                xAxes: [{
+                                    ticks: {
+                                        max: 10,
+                                        min: -10,
+                                        stepSize: 1
+                                    }
+                                }],
+                            }
+                        },
+                    })
+                },
+                updateLidar (obstacles) {
+                    // Only do things if obstacles is defined
+                    if (typeof obstacles !== 'undefined') {
+                        // Plot obstacles in temporary lists
+                        var tmpCoords = obstacles.points
+
+                        // Update the live data
+                        this.chart.data.datasets[0].data = tmpCoords
+                        this.chart.update()
+                    }
+                },
+                getLidarData () {
+                    socket.on('lidar', data => {
+                        this.updateLidar(data)
+                    })
+                }
+            }
+        })
+
 
         var homePage =
         Vue.component("home-page", {
@@ -275,7 +392,8 @@
             methods: { },
             components: {
                 errorLog: errorLog,
-                statusComponent: statusComponent
+                statusComponent: statusComponent,
+                lidarStream: lidarStream
             }
         });
 
@@ -327,7 +445,7 @@
             next()
         })
 
-
+        // Vue.use(Plotly);
         Vue.use(VueMaterial);
 
         // APP

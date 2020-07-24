@@ -3,6 +3,7 @@
 import cv2
 import json
 import rospy
+import random
 import threading
 import time
 
@@ -41,8 +42,11 @@ ctrl_status = {
     'turn': 0.0
     }
 
+origin = {"x": 0, "y": 0}
 # LiDAR
-obstacle_points = []
+obstacle_points = {
+    "points": []
+}
 
 # Errors
 error_queue = []
@@ -55,10 +59,11 @@ def data_stream():
     for key, val in ctrl_status.items():
         status[f'control.{key}'] = val
 
-    status['points'] = str(obstacle_points)
-
     # Send status to the frontend
     socketio.emit('newData', status)
+
+def lidar_data_stream():
+    socketio.emit('lidar', obstacle_points)
 
 def publish_errors():
     global error_queue
@@ -86,6 +91,7 @@ def camera_feed():
 
         # Send data to frontend as well
         data_stream()
+        lidar_data_stream()
 
         # Send errors to frontend
         publish_errors()
@@ -121,14 +127,17 @@ def update_control_input(ctrl: Twist):
 def update_lidar(point_cloud: PointCloud):
     global obstacle_points
 
-    tmp_obstacle_points = []
+    tmp_points = []
 
     # Update the obstacle points locally first
     for pt in point_cloud.points:
-        pt_tuple = (pt.x, pt.y)
-        tmp_obstacle_points.append(pt_tuple)
+        # Flip the axes for better viewing experience on the frontend
+        tmp_points.append({
+            "y": pt.x,
+            "x": pt.y
+        })
 
-    obstacle_points = tmp_obstacle_points
+    obstacle_points['points'] = tmp_points
 
 def new_error(error: String):
     global error_queue
