@@ -131,10 +131,9 @@ def update_lidar(point_cloud: PointCloud):
 
     # Update the obstacle points locally first
     for pt in point_cloud.points:
-        # Flip the axes for better viewing experience on the frontend
         tmp_points.append({
-            "y": pt.x,
-            "x": pt.y
+            "x": pt.x,
+            "y": pt.y
         })
 
     obstacle_points['points'] = tmp_points
