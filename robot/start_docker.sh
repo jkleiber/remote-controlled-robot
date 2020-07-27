@@ -19,6 +19,10 @@ docker build $BUILD_DIR -t ${DOCKER_IMG}
 docker stop ${CONTAINER_NAME}
 docker rm ${CONTAINER_NAME}
 
+# Setup the udev rules
+echo "Setting udev rules..."
+./setup/setup_devices.sh
+
 # Run the image inside the specified container
 docker run \
     -d \
