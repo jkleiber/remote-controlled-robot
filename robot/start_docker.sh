@@ -3,7 +3,7 @@
 source docker_config.sh
 
 # Default build directory
-BUILD_DIR="robot-dev/"
+BUILD_DIR="${DOCKER_PATH}/robot-dev/"
 BUILD_TAG="dev"
 
 # Docker image and tag
@@ -22,7 +22,10 @@ docker rm ${CONTAINER_NAME}
 # Run the image inside the specified container
 docker run \
     -d \
-    -v /dev:/dev \
+    -v /dev/ydlidar:/dev/ydlidar \
+    -v /dev/ttyUSB0:/dev/ttyUSB0 \
+    -v /dev/video0:/dev/video0 \
+    -v /dev/video1:/dev/video1 \
     -v $(pwd):/workspace \
     --privileged \
     --net=host \

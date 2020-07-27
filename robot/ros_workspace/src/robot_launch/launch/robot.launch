@@ -1,0 +1,12 @@
+<launch>
+    <!-- GUI -->
+    <node pkg="kleiber_ui" name="ui_node" type="ui_node.py" output="screen" />
+
+    <!-- Teleop control -->
+    <node pkg="kleiber_teleop" name="teleop_node" type="teleop_node.py" output="screen" />
+
+    <!-- OpenCV / Vision -->
+    <node pkg="kleiber_vision" name="vision_node" type="vision_node.py" output="screen" />
+    <node pkg="kleiber_vision" name="lidar_node" type="lidar_node.py" output="screen" />
+    <include file="$(find kleiber_vision)/launch/lidar.launch" />
+</launch>

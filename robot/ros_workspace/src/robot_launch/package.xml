@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>shamrock_launch</name>
+  <name>robot_launch</name>
   <version>0.0.0</version>
-  <description>The shamrock_launch package</description>
+  <description>The robot_launch package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/shamrock_launch</url> -->
+  <!-- <url type="website">http://wiki.ros.org/robot_launch</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
@@ -49,15 +49,15 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>shamrock_teleop</build_depend>
-  <build_depend>shamrock_ui</build_depend>
-  <build_depend>shamrock_vision</build_depend>
-  <build_export_depend>shamrock_teleop</build_export_depend>
-  <build_export_depend>shamrock_ui</build_export_depend>
-  <build_export_depend>shamrock_vision</build_export_depend>
-  <exec_depend>shamrock_teleop</exec_depend>
-  <exec_depend>shamrock_ui</exec_depend>
-  <exec_depend>shamrock_vision</exec_depend>
+  <build_depend>kleiber_teleop</build_depend>
+  <build_depend>kleiber_ui</build_depend>
+  <build_depend>kleiber_vision</build_depend>
+  <build_export_depend>kleiber_teleop</build_export_depend>
+  <build_export_depend>kleiber_ui</build_export_depend>
+  <build_export_depend>kleiber_vision</build_export_depend>
+  <exec_depend>kleiber_teleop</exec_depend>
+  <exec_depend>kleiber_ui</exec_depend>
+  <exec_depend>kleiber_vision</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
