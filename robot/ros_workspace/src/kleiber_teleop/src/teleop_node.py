@@ -71,9 +71,7 @@ def recv_control(time):
 
     # Find the appropriate control from the given packet.
     control.angular.z = -0.75 * round(current_data.ABS_RX / 32768, 5)
-    control.angular.z = control.angular.z**3
     control.linear.x = 0.75 * round(current_data.ABS_Y / 32768, 5)
-    control.linear.x = control.linear.x**3
 
     # Form the robot input dictionary.
     ctrl_dict = {}

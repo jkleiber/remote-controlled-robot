@@ -2,6 +2,7 @@
 
 import cv2
 import json
+import logging
 import rospy
 import random
 import threading
@@ -24,6 +25,10 @@ class CustomFlask(Flask):
         comment_start_string='<#',
         comment_end_string='#>',
     ))
+
+# Logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 # App
 app = CustomFlask(__name__, template_folder='./frontend', static_folder='./frontend/static')
@@ -51,41 +56,42 @@ obstacle_points = {
 # Errors
 error_queue = []
 
-def data_stream():
-    status = {}
-
-    # Encode status
-    status['time'] = time.time()
-    for key, val in ctrl_status.items():
-        status[f'control.{key}'] = val
-
-    # Send status to the frontend
-    socketio.emit('newData', status)
-
-def lidar_data_stream():
-    socketio.emit('lidar', obstacle_points)
-
-def publish_errors():
-    global error_queue
-
-    error_pkt = {}
-    num_errors = len(error_queue)
-    for _ in range(num_errors):
-        error_pkt['msg'] = error_queue.pop(0)
-        socketio.emit('newError', error_pkt)
 
 def data_loop():
     while True:
-        # Send data to frontend as well
-        data_stream()
-        lidar_data_stream()
+        status = {}
 
-        # Send errors to frontend
-        publish_errors()
+        # Encode status
+        status['time'] = time.time()
+        for key, val in ctrl_status.items():
+            status[f'control.{key}'] = val
 
-        time.sleep(0.01)
+        # Send status to the frontend
+        socketio.emit('newData', status)
 
-def camera_feed():
+        # Limit to max rate of 50 Hz
+        time.sleep(0.02)
+
+def lidar_loop():
+    while True:
+        socketio.emit('lidar', obstacle_points)
+
+        # Limit to 5 Hz
+        time.sleep(0.2)
+
+def error_loop():
+    global error_queue
+    while True:
+        error_pkt = {}
+        num_errors = len(error_queue)
+        for _ in range(num_errors):
+            error_pkt['msg'] = error_queue.pop(0)
+            socketio.emit('newError', error_pkt)
+
+        # Limit to 10 Hz
+        time.sleep(0.1)
+
+def camera_loop():
     global frame, frame_available
     while True:
         # Don't show frames if there hasn't been an update recently
@@ -97,8 +103,7 @@ def camera_feed():
 
         # Encode into JPEG
         ret_code, jpg_buffer = cv2.imencode(
-            ".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
-        # jpg_buffer = cv2.imencode('.jpg', frame)[1]
+            ".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 20])
 
         # If JPEG encode is successful, show image
         if jpg_buffer is not None:
@@ -111,11 +116,16 @@ def index():
 
 @app.route('/video_stream')
 def video_stream():
-    return Response(camera_feed(),
+    return Response(camera_loop(),
                 mimetype='multipart/x-mixed-replace; boundary=frame')
 
+
 def start(ip='0.0.0.0', port=5000):
+    # Track different types of data in different threads.
     data_thread = threading.Thread(target = data_loop, daemon = True).start()
+    lidar_thread = threading.Thread(target = lidar_loop, daemon = True).start()
+    error_thread = threading.Thread(target = error_loop, daemon = True).start()
+
     app.run(host=ip, port=port, threaded=True)
 
 def update_frame(new_frame: Image):
