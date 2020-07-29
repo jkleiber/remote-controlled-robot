@@ -97,7 +97,7 @@ def main_loop():
     rospy.init_node("teleop_node")
 
     # Get control data at a specific rate.
-    recv_timer = rospy.Timer(rospy.Duration(0.01), recv_control)
+    recv_timer = rospy.Timer(rospy.Duration(0.025), recv_control)
 
     # Spin
     rospy.spin()
