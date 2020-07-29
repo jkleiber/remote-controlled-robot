@@ -74,6 +74,17 @@ def publish_errors():
         error_pkt['msg'] = error_queue.pop(0)
         socketio.emit('newError', error_pkt)
 
+def data_loop():
+    while True:
+        # Send data to frontend as well
+        data_stream()
+        lidar_data_stream()
+
+        # Send errors to frontend
+        publish_errors()
+
+        time.sleep(0.01)
+
 def camera_feed():
     global frame, frame_available
     while True:
@@ -88,13 +99,6 @@ def camera_feed():
         ret_code, jpg_buffer = cv2.imencode(
             ".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 25])
         # jpg_buffer = cv2.imencode('.jpg', frame)[1]
-
-        # Send data to frontend as well
-        data_stream()
-        lidar_data_stream()
-
-        # Send errors to frontend
-        publish_errors()
 
         # If JPEG encode is successful, show image
         if jpg_buffer is not None:
@@ -111,6 +115,7 @@ def video_stream():
                 mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def start(ip='0.0.0.0', port=5000):
+    data_thread = threading.Thread(target = data_loop, daemon = True).start()
     app.run(host=ip, port=port, threaded=True)
 
 def update_frame(new_frame: Image):
