@@ -1,0 +1,12 @@
+
+TODO: outline the necessary steps to setup the Jetson nano
+This was helpful:
+https://www.jetsonhacks.com/2019/08/21/jetson-nano-headless-setup/
+
+Key things:
+- Use Balena Etcher
+- Plugging USB in before powering the device on.
+
+Notes:
+- The Jetson Nano will mount as L4T-README if successful
+- It will appear on /dev/ttyACM0, not /dev/ttyUSB0
