@@ -4,7 +4,7 @@
 Software for controlling a robot over a VPN with a Logitech F310 Gamepad. The robot runs python on a raspberry pi, and is controlled with an arduino. A VPN connection is used to facilitate communication between a PC and the robot over the internet. Specifically, this project uses [WireGuard VPN](https://www.wireguard.com/) hosted on a private Vultr server.
 
 ## Video
-[See the robot running here](https://kleiber.xyz/static/video/remote-control-demo.mp4)
+[See the robot running here](https://youtu.be/Qc30NS8nozs)
 
 ## Setup Guide
 ### Requirements
